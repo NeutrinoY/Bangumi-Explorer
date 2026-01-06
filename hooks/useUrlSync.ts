@@ -108,7 +108,7 @@ export function useUrlSync(
     if (searchText) params.set('q', searchText);
 
     // Status
-    if (statusFilter !== 'todo') params.set('st', statusFilter);
+    if (statusFilter !== 'all') params.set('st', statusFilter);
 
     // Sort
     if (sortBy !== 'rank') params.set('sort', sortBy);

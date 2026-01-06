@@ -1,36 +1,50 @@
 "use client";
 
 import { useState, useEffect } from "react";
-
-const TOKEN_KEY = "bangumi_access_token";
-const SECRET_TOKEN = "valid_session_0621"; // Stored in LS to indicate logged in
-const ACCESS_CODE = "0621";
+import { supabase } from "@/lib/supabaseClient";
+import type { User } from "@supabase/supabase-js";
 
 export function useAdmin() {
+  const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAuthLoaded, setIsAuthLoaded] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem(TOKEN_KEY);
-    if (stored === SECRET_TOKEN) {
-      setIsAdmin(true);
-    }
-    setIsAuthLoaded(true);
+    // 1. Check active session on mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setIsAdmin(!!session?.user);
+      setIsAuthLoaded(true);
+    });
+
+    // 2. Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      setIsAdmin(!!session?.user);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = (code: string) => {
-    if (code === ACCESS_CODE) {
-      localStorage.setItem(TOKEN_KEY, SECRET_TOKEN);
-      setIsAdmin(true);
-      return true;
+  const login = async (email: string, pass: string) => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password: pass,
+    });
+    if (error) {
+      console.error("Login failed:", error.message);
+      return false;
     }
-    return false;
+    return true;
   };
 
-  const logout = () => {
-    localStorage.removeItem(TOKEN_KEY);
+  const logout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
     setIsAdmin(false);
   };
 
-  return { isAdmin, login, logout, isAuthLoaded };
+  return { isAdmin, user, login, logout, isAuthLoaded };
 }

@@ -32,7 +32,7 @@ function BangumiExplorer() {
   const [filters, setFilters] = useState(INITIAL_FILTERS);
   const [selectedTypes, setSelectedTypes] = useState<Set<string>>(new Set(["TV", "Movie", "OVA", "Web"]));
   const [searchText, setSearchText] = useState("");
-  const [statusFilter, setStatusFilter] = useState<StatusFilterType>('todo');
+  const [statusFilter, setStatusFilter] = useState<StatusFilterType>('all');
   const [sortBy, setSortBy] = useState("rank");
   const [selectedSeason, setSelectedSeason] = useState<number | null>(null);
 
@@ -73,7 +73,7 @@ function BangumiExplorer() {
     setFilters(INITIAL_FILTERS);
     setSelectedTypes(new Set(["TV", "Movie", "OVA", "Web"]));
     setSearchText("");
-    setStatusFilter('todo');
+    setStatusFilter('all');
     setSelectedSeason(null);
     setSortBy("rank");
     setPage(1);
