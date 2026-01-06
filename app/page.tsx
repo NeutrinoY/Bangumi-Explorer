@@ -5,8 +5,10 @@ import { useCollection } from "@/hooks/useCollection";
 import { AnimeCard } from "@/components/AnimeCard";
 import { FilterPanel, type StatusFilterType } from "@/components/FilterPanel";
 import { AnimeDetailModal } from "@/components/AnimeDetailModal";
+import { LoginModal } from "@/components/LoginModal";
+import { useAdmin } from "@/hooks/useAdmin";
 import { useState, useMemo, useEffect, Suspense } from "react";
-import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, Lock, Unlock } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import { useUrlSync } from "@/hooks/useUrlSync";
 
@@ -21,8 +23,10 @@ const INITIAL_FILTERS = {
 function BangumiExplorer() {
   const { data, loading } = useBangumiData();
   const { getStatus, updateStatus, isLoaded: isCollectionLoaded } = useCollection();
+  const { isAdmin, login, logout } = useAdmin();
 
   const [selectedItem, setSelectedItem] = useState<BangumiSubject | null>(null);
+  const [showLogin, setShowLogin] = useState(false);
 
   // --- Filter States ---
   const [filters, setFilters] = useState(INITIAL_FILTERS);
@@ -191,6 +195,7 @@ function BangumiExplorer() {
                     item={item}
                     status={getStatus(item.id)}
                     onUpdateStatus={updateStatus}
+                    isAdmin={isAdmin}
                   />
                 </div>
               ))}
@@ -266,9 +271,24 @@ function BangumiExplorer() {
             onClose={() => setSelectedItem(null)}
             status={getStatus(selectedItem.id)}
             onUpdateStatus={updateStatus}
+            isAdmin={isAdmin}
           />
         )}
       </AnimatePresence>
+
+      {/* Admin Toggle */}
+      <div className="fixed bottom-4 right-4 z-50 opacity-30 hover:opacity-100 transition-opacity">
+        <button 
+          onClick={() => isAdmin ? logout() : setShowLogin(true)}
+          className="p-2 bg-black/50 hover:bg-neutral-800 border border-neutral-700 rounded-full text-neutral-500 hover:text-white transition-all shadow-lg"
+          title={isAdmin ? "Logout" : "Admin Login"}
+        >
+          {isAdmin ? <Unlock size={14} /> : <Lock size={14} />}
+        </button>
+      </div>
+
+      <LoginModal isOpen={showLogin} onClose={() => setShowLogin(false)} onLogin={login} />
+
     </main>
   );
 }

@@ -9,9 +9,10 @@ interface AnimeCardProps {
   item: BangumiSubject;
   status: ItemStatus; // 'collected' | 'wishlist' | 'ignored' | null
   onUpdateStatus: (id: number, status: ItemStatus) => void;
+  isAdmin: boolean;
 }
 
-export function AnimeCard({ item, status, onUpdateStatus }: AnimeCardProps) {
+export function AnimeCard({ item, status, onUpdateStatus, isAdmin }: AnimeCardProps) {
   // Bangumi Strict Scoring Colors
   const getScoreColor = (s: number) => {
     if (s >= 9.0) return "text-[#FFD700]"; // Gold
@@ -42,12 +43,16 @@ export function AnimeCard({ item, status, onUpdateStatus }: AnimeCardProps) {
       break;
     case 'ignored':
       borderClass = "border-neutral-800";
-      opacityClass = "opacity-40 hover:opacity-100 transition-opacity";
+      opacityClass = "opacity-40"; // No hover effect for Guest, maybe minimal for Admin
       grayscaleClass = "grayscale";
       break;
     default:
-      // Normal: Hover effects handled in container
       break;
+  }
+
+  // Admin: Opacity hover effect to see ignored items clearly
+  if (isAdmin && status === 'ignored') {
+    opacityClass = "opacity-40 hover:opacity-100 transition-opacity";
   }
 
   return (
@@ -80,38 +85,41 @@ export function AnimeCard({ item, status, onUpdateStatus }: AnimeCardProps) {
           </div>
         )}
 
-        {/* Action Overlay (Bottom Slide-in) */}
-        <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black via-black/80 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-200 z-20 flex items-center justify-around gap-2">
-            
-            {/* Ignore */}
-            <button 
-              onClick={(e) => { e.stopPropagation(); onUpdateStatus(item.id, status === 'ignored' ? null : 'ignored'); }}
-              className={`p-2 rounded-full border backdrop-blur-md transition-all ${status === 'ignored' ? "bg-red-500 border-red-400 text-white" : "bg-black/50 border-white/10 text-neutral-400 hover:text-white hover:bg-red-900/50 hover:border-red-500"}`}
-              title="Ignore"
-            >
-              <Ban size={16} />
-            </button>
+        {/* ADMIN ACTION BAR (Always Visible) */}
+        {isAdmin && (
+          <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black via-black/90 to-transparent z-20 flex items-center justify-between gap-3">
+              
+              {/* Ignore */}
+              <button 
+                onClick={(e) => { e.stopPropagation(); onUpdateStatus(item.id, status === 'ignored' ? null : 'ignored'); }}
+                className={`flex-1 py-2 rounded-md border backdrop-blur-md transition-all flex items-center justify-center ${status === 'ignored' ? "bg-red-600 border-red-500 text-white shadow-red-900/50" : "bg-neutral-900/80 border-white/10 text-neutral-400 hover:text-white hover:bg-red-900/80 hover:border-red-500"}`}
+                title="Ignore"
+              >
+                <Ban size={18} />
+              </button>
 
-            {/* Wishlist */}
-            <button 
-              onClick={(e) => { e.stopPropagation(); onUpdateStatus(item.id, status === 'wishlist' ? null : 'wishlist'); }}
-              className={`p-2 rounded-full border backdrop-blur-md transition-all ${status === 'wishlist' ? "bg-blue-500 border-blue-400 text-white" : "bg-black/50 border-white/10 text-neutral-400 hover:text-white hover:bg-blue-900/50 hover:border-blue-500"}`}
-              title="Wishlist"
-            >
-              <Bookmark size={16} />
-            </button>
+              {/* Wishlist */}
+              <button 
+                onClick={(e) => { e.stopPropagation(); onUpdateStatus(item.id, status === 'wishlist' ? null : 'wishlist'); }}
+                className={`flex-1 py-2 rounded-md border backdrop-blur-md transition-all flex items-center justify-center ${status === 'wishlist' ? "bg-blue-600 border-blue-500 text-white shadow-blue-900/50" : "bg-neutral-900/80 border-white/10 text-neutral-400 hover:text-white hover:bg-blue-900/80 hover:border-blue-500"}`}
+                title="Wishlist"
+              >
+                <Bookmark size={18} />
+              </button>
 
-            {/* Collect */}
-            <button 
-              onClick={(e) => { e.stopPropagation(); onUpdateStatus(item.id, status === 'collected' ? null : 'collected'); }}
-              className={`p-2 rounded-full border backdrop-blur-md transition-all ${status === 'collected' ? "bg-green-500 border-green-400 text-white" : "bg-black/50 border-white/10 text-neutral-400 hover:text-white hover:bg-green-900/50 hover:border-green-500"}`}
-              title="Collect"
-            >
-              <Check size={16} />
-            </button>
-        </div>
+              {/* Collect */}
+              <button 
+                onClick={(e) => { e.stopPropagation(); onUpdateStatus(item.id, status === 'collected' ? null : 'collected'); }}
+                className={`flex-1 py-2 rounded-md border backdrop-blur-md transition-all flex items-center justify-center ${status === 'collected' ? "bg-green-600 border-green-500 text-white shadow-green-900/50" : "bg-neutral-900/80 border-white/10 text-neutral-400 hover:text-white hover:bg-green-900/80 hover:border-green-500"}`}
+                title="Collect"
+              >
+                <Check size={18} />
+              </button>
+          </div>
+        )}
         
-        {/* Current Status Indicator (Top Right - Always Visible if set) */}
+        {/* Status Indicator (Guest Mode: Show icon / Admin: Hide if redundant? No, keep it for clarity) */}
+        {/* Actually, if Admin bar is visible, we see the active button. But keeping top-right indicator is good for quick scanning. */}
         {status && (
            <div className={`absolute top-2 right-2 p-1.5 rounded-full border shadow-md z-10 ${
              status === 'collected' ? 'bg-green-500 border-green-400 text-white' :
@@ -125,7 +133,7 @@ export function AnimeCard({ item, status, onUpdateStatus }: AnimeCardProps) {
         )}
 
         {/* Type Badge */}
-        <div className="absolute bottom-1 right-1 px-1.5 py-0.5 bg-black/80 backdrop-blur rounded text-[10px] font-bold text-neutral-300 uppercase tracking-wider border border-white/10 group-hover:opacity-0 transition-opacity">
+        <div className={`absolute bottom-1 right-1 px-1.5 py-0.5 bg-black/80 backdrop-blur rounded text-[10px] font-bold text-neutral-300 uppercase tracking-wider border border-white/10 transition-opacity ${isAdmin ? 'opacity-0' : ''}`}>
           {item.type}
         </div>
       </div>

@@ -12,6 +12,7 @@ interface AnimeDetailModalProps {
   onClose: () => void;
   status: ItemStatus;
   onUpdateStatus: (id: number, status: ItemStatus) => void;
+  isAdmin: boolean;
 }
 
 const getSiteUrl = (site: string, id: string) => {
@@ -26,7 +27,7 @@ const getSiteUrl = (site: string, id: string) => {
   }
 };
 
-export function AnimeDetailModal({ item, onClose, status, onUpdateStatus }: AnimeDetailModalProps) {
+export function AnimeDetailModal({ item, onClose, status, onUpdateStatus, isAdmin }: AnimeDetailModalProps) {
   useEffect(() => {
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
     document.body.style.overflow = "hidden";
@@ -79,42 +80,57 @@ export function AnimeDetailModal({ item, onClose, status, onUpdateStatus }: Anim
             )}
           </div>
 
-          {/* New Status Actions */}
-          <div className="flex flex-col gap-2">
-             <button
-              onClick={() => onUpdateStatus(item.id, status === 'collected' ? null : 'collected')}
-              className={`w-full py-3 rounded-md font-bold text-sm tracking-wide flex items-center justify-center gap-2 transition-all ${
-                status === 'collected'
-                  ? "bg-green-600 hover:bg-green-500 text-white shadow-lg shadow-green-900/20"
-                  : "bg-white text-black hover:bg-neutral-200"
-              }`}
-            >
-              {status === 'collected' ? <><Check size={18} /> SAVED</> : <><Plus size={18} /> COLLECT</>}
-            </button>
-            
-            <div className="grid grid-cols-2 gap-2">
+          {/* ADMIN ONLY: Status Actions */}
+          {isAdmin && (
+            <div className="flex flex-col gap-2">
                <button
-                  onClick={() => onUpdateStatus(item.id, status === 'wishlist' ? null : 'wishlist')}
-                  className={`py-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition-all border ${
-                    status === 'wishlist'
-                      ? "bg-blue-600 border-blue-500 text-white"
-                      : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white hover:border-neutral-600"
-                  }`}
-                >
-                  <Bookmark size={14} /> Wishlist
-                </button>
-                <button
-                  onClick={() => onUpdateStatus(item.id, status === 'ignored' ? null : 'ignored')}
-                  className={`py-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition-all border ${
-                    status === 'ignored'
-                      ? "bg-red-900/50 border-red-500 text-red-200"
-                      : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white hover:border-neutral-600"
-                  }`}
-                >
-                  <Ban size={14} /> Ignore
-                </button>
+                onClick={() => onUpdateStatus(item.id, status === 'collected' ? null : 'collected')}
+                className={`w-full py-3 rounded-md font-bold text-sm tracking-wide flex items-center justify-center gap-2 transition-all ${
+                  status === 'collected'
+                    ? "bg-green-600 hover:bg-green-500 text-white shadow-lg shadow-green-900/20"
+                    : "bg-white text-black hover:bg-neutral-200"
+                }`}
+              >
+                {status === 'collected' ? <><Check size={18} /> SAVED</> : <><Plus size={18} /> COLLECT</>}
+              </button>
+              
+              <div className="grid grid-cols-2 gap-2">
+                 <button
+                    onClick={() => onUpdateStatus(item.id, status === 'wishlist' ? null : 'wishlist')}
+                    className={`py-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition-all border ${
+                      status === 'wishlist'
+                        ? "bg-blue-600 border-blue-500 text-white"
+                        : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white hover:border-neutral-600"
+                    }`}
+                  >
+                    <Bookmark size={14} /> Wishlist
+                  </button>
+                  <button
+                    onClick={() => onUpdateStatus(item.id, status === 'ignored' ? null : 'ignored')}
+                    className={`py-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition-all border ${
+                      status === 'ignored'
+                        ? "bg-red-900/50 border-red-500 text-red-200"
+                        : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white hover:border-neutral-600"
+                    }`}
+                  >
+                    <Ban size={14} /> Ignore
+                  </button>
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Status Badge for Guest (Read-only) */}
+          {!isAdmin && status && (
+             <div className={`w-full py-3 rounded-md font-bold text-sm tracking-wide flex items-center justify-center gap-2 select-none cursor-default border ${
+                status === 'collected' ? "bg-green-900/20 text-green-400 border-green-900" :
+                status === 'wishlist' ? "bg-blue-900/20 text-blue-400 border-blue-900" :
+                "bg-red-900/20 text-red-400 border-red-900"
+             }`}>
+                {status === 'collected' && <><Check size={16} /> Collected</>}
+                {status === 'wishlist' && <><Bookmark size={16} /> Wishlist</>}
+                {status === 'ignored' && <><Ban size={16} /> Ignored</>}
+             </div>
+          )}
 
           <div className="bg-neutral-900 rounded-lg p-3 border border-neutral-800">
             <h4 className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-3">Community Stats</h4>
