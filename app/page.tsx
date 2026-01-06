@@ -7,9 +7,10 @@ import { FilterPanel } from "@/components/FilterPanel";
 import { AnimeDetailModal } from "@/components/AnimeDetailModal";
 import { useState, useMemo, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { AnimatePresence } from "framer-motion";
 
 const INITIAL_FILTERS = {
-  year: [0, 2026] as [number, number],
+  year: [0, 2030] as [number, number],
   score: [0, 10] as [number, number],
   rank: [0, 99999] as [number, number],
   votes: [0, 999999] as [number, number],
@@ -24,7 +25,7 @@ export default function Home() {
 
   // --- Filter States ---
   const [filters, setFilters] = useState(INITIAL_FILTERS);
-  const [selectedTypes, setSelectedTypes] = useState<Set<string>>(new Set(["TV", "Movie", "OVA"]));
+  const [selectedTypes, setSelectedTypes] = useState<Set<string>>(new Set(["TV", "Movie", "OVA", "Web"]));
   const [searchText, setSearchText] = useState("");
   const [hideCollected, setHideCollected] = useState(false);
   const [sortBy, setSortBy] = useState("rank");
@@ -47,9 +48,15 @@ export default function Home() {
     setPage(1); 
   };
 
+  const applyFilters = (newFilters: Partial<typeof INITIAL_FILTERS>, newTypes?: Set<string>) => {
+    setFilters(prev => ({ ...prev, ...newFilters }));
+    if (newTypes) setSelectedTypes(newTypes);
+    setPage(1);
+  };
+
   const resetAll = () => {
     setFilters(INITIAL_FILTERS);
-    setSelectedTypes(new Set(["TV", "Movie", "OVA"]));
+    setSelectedTypes(new Set(["TV", "Movie", "OVA", "Web"]));
     setSearchText("");
     setHideCollected(false);
     setSelectedSeason(null);
@@ -140,6 +147,7 @@ export default function Home() {
     <main className="min-h-screen bg-neutral-950 text-neutral-300 font-sans selection:bg-pink-500 selection:text-white pb-20">
       <FilterPanel
         filters={filters} setFilter={setSingleFilter} resetAll={resetAll}
+        applyFilters={applyFilters}
         selectedTypes={selectedTypes} toggleType={toggleType}
         searchText={searchText} setSearchText={setSearchText}
         hideCollected={hideCollected} setHideCollected={setHideCollected}
@@ -232,14 +240,16 @@ export default function Home() {
         )}
       </div>
 
-      {selectedItem && (
-        <AnimeDetailModal
-          item={selectedItem}
-          onClose={() => setSelectedItem(null)}
-          isCollected={collectedIds.has(selectedItem.id)}
-          onToggle={toggle}
-        />
-      )}
+      <AnimatePresence>
+        {selectedItem && (
+          <AnimeDetailModal
+            item={selectedItem}
+            onClose={() => setSelectedItem(null)}
+            isCollected={collectedIds.has(selectedItem.id)}
+            onToggle={toggle}
+          />
+        )}
+      </AnimatePresence>
     </main>
   );
 }

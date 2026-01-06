@@ -4,6 +4,7 @@ import Image from "next/image";
 import { X, ExternalLink, Clapperboard, Users, Music, BookOpen, User, Eye, Heart, Clock, PauseCircle } from "lucide-react";
 import type { BangumiSubject } from "@/hooks/useBangumiData";
 import { useEffect } from "react";
+import { motion } from "framer-motion";
 
 interface AnimeDetailModalProps {
   item: BangumiSubject;
@@ -12,41 +13,66 @@ interface AnimeDetailModalProps {
   onToggle: (id: number) => void;
 }
 
-// 简单的 URL 映射逻辑
+// Simple URL mapping
 const getSiteUrl = (site: string, id: string) => {
   switch (site) {
     case 'bangumi': return `https://bgm.tv/subject/${id}`;
-    case 'bilibili': return `https://www.bilibili.com/bangumi/play/ss${id}`; // 假设 ID 是 Season ID
+    case 'bilibili': return `https://www.bilibili.com/bangumi/play/ss${id}`;
     case 'iqiyi': return `https://www.iqiyi.com/${id}.html`;
     case 'qq': return `https://v.qq.com/x/cover/${id}.html`;
     case 'nicovideo': return `https://ch.nicovideo.jp/${id}`;
     case 'netflix': return `https://www.netflix.com/title/${id}`;
-    default: return null; // 未知站点不生成链接或仅显示名称
+    default: return null;
   }
 };
 
 export function AnimeDetailModal({ item, onClose, isCollected, onToggle }: AnimeDetailModalProps) {
   useEffect(() => {
+    // 1. Calculate scrollbar width
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    
+    // 2. Lock scroll and compensate layout shift
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = "unset"; };
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+
+    // 3. Cleanup
+    return () => {
+      document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
+    };
   }, []);
 
-  // Safe access to score chart
   const chart = item.score_chart || {};
-  // Find max value for normalization
   const maxVote = Math.max(...Object.values(chart).map(Number), 1);
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
-      <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={onClose} />
+      {/* Backdrop */}
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="absolute inset-0 bg-black/90 backdrop-blur-sm" 
+        onClick={onClose} 
+      />
       
-      <div className="relative w-full max-w-6xl max-h-[90vh] bg-neutral-900 border border-neutral-800 rounded-xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
+      {/* Content */}
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        transition={{ type: "spring", damping: 25, stiffness: 300, mass: 0.5 }}
+        className="relative w-full max-w-6xl max-h-[90vh] bg-neutral-900 border border-neutral-800 rounded-xl shadow-2xl overflow-hidden flex flex-col md:flex-row z-10"
+      >
         
         {/* Close Button */}
         <button onClick={onClose} className="absolute top-4 right-4 z-20 p-2 bg-black/50 text-white rounded-full hover:bg-neutral-700 transition-colors"><X size={20} /></button>
 
         {/* --- Left Sidebar --- */}
-        <div className="w-full md:w-[300px] bg-neutral-950 p-5 flex flex-col gap-5 border-r border-neutral-800 overflow-y-auto shrink-0">
+        <div className="w-full md:w-[300px] bg-neutral-950 p-5 flex flex-col gap-5 border-r border-neutral-800 overflow-y-auto shrink-0 custom-scrollbar">
           
           {/* Cover */}
           <div className="relative aspect-[2/3] w-full rounded-lg overflow-hidden shadow-2xl border border-neutral-800 group bg-neutral-900">
@@ -69,7 +95,7 @@ export function AnimeDetailModal({ item, onClose, isCollected, onToggle }: Anime
             {isCollected ? "SAVED" : "COLLECT"}
           </button>
 
-          {/* Stats Grid (Improved Layout for Large Numbers) */}
+          {/* Stats Grid */}
           <div className="bg-neutral-900 rounded-lg p-3 border border-neutral-800">
             <h4 className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-3">Community Stats</h4>
             <div className="space-y-3">
@@ -80,14 +106,14 @@ export function AnimeDetailModal({ item, onClose, isCollected, onToggle }: Anime
             </div>
           </div>
 
-          {/* External Links (Real URLs) */}
+          {/* External Links */}
           {item.sites && item.sites.length > 0 && (
             <div className="space-y-2 mt-auto">
               <h4 className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Visit</h4>
               <div className="flex flex-wrap gap-2">
                 {item.sites.map((siteObj) => {
                   const url = getSiteUrl(siteObj.site, siteObj.id);
-                  if (!url) return null; // Skip unknown sites for now
+                  if (!url) return null; 
                   return (
                     <a 
                       key={siteObj.site} 
@@ -106,7 +132,7 @@ export function AnimeDetailModal({ item, onClose, isCollected, onToggle }: Anime
         </div>
 
         {/* --- Right Content --- */}
-        <div className="flex-1 overflow-y-auto bg-neutral-900/50">
+        <div className="flex-1 overflow-y-auto bg-neutral-900/50 custom-scrollbar">
           <div className="p-6 md:p-10 space-y-8">
             
             {/* Header */}
@@ -191,7 +217,7 @@ export function AnimeDetailModal({ item, onClose, isCollected, onToggle }: Anime
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, SlidersHorizontal, Calendar, Star, Users, Layers, Trophy, X, Snowflake, Wind, Sun, CloudRain, ArrowDownUp, Check, ChevronDown } from "lucide-react";
+import { Search, SlidersHorizontal, Calendar, Star, Users, Layers, Trophy, X, Snowflake, Wind, Sun, CloudRain, ArrowDownUp, Check, ChevronDown, Flame, Gem, Hourglass, Zap, Clapperboard, Film } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -13,6 +13,7 @@ interface FilterPanelProps {
     eps: [number, number];
   };
   setFilter: (key: string, val: [number, number]) => void;
+  applyFilters: (filters: any, types?: Set<string>) => void;
   resetAll: () => void;
 
   selectedTypes: Set<string>; toggleType: (t: string) => void;
@@ -26,8 +27,85 @@ interface FilterPanelProps {
   totalCount: number; showingCount: number;
 }
 
+// Global Defaults for "Reset" logic (User's "Default State")
+const DEFAULT_TYPES = new Set(["TV", "Movie", "OVA", "Web"]);
+const DEFAULT_FILTERS = {
+  year: [0, 2030], 
+  votes: [0, 999999],
+  rank: [0, 99999],
+  score: [0, 10]
+};
+
+// Define Types for strict matching
+const NON_MOVIE_TYPES = ["TV", "OVA", "Web"];
+const MOVIE_TYPES = ["Movie"];
+
+const PRESETS = [
+  // Quadrant 1: Modern Hits
+  { 
+    id: 'modern_hits', 
+    label: 'Modern Hits', 
+    icon: <Flame size={12} />,
+    // Fix: Explicitly set text color for inactive state
+    color: 'text-orange-400 border-orange-500/30 hover:bg-orange-500/10',
+    activeColor: 'bg-orange-500 text-white border-orange-500',
+    apply: { year: [2006, 2026], votes: [2000, 999999], rank: [0, 99999], score: [0, 10] },
+    types: NON_MOVIE_TYPES
+  },
+  // Quadrant 2: Modern Gems
+  { 
+    id: 'modern_gems', 
+    label: 'Modern Gems', 
+    icon: <Gem size={12} />,
+    color: 'text-purple-400 border-purple-500/30 hover:bg-purple-500/10',
+    activeColor: 'bg-purple-500 text-white border-purple-500',
+    apply: { year: [2006, 2026], votes: [1000, 1999], rank: [0, 99999], score: [0, 10] },
+    types: NON_MOVIE_TYPES
+  },
+  // Quadrant 3: Retro Classics
+  { 
+    id: 'retro_classics', 
+    label: 'Retro Classics', 
+    icon: <Hourglass size={12} />,
+    color: 'text-yellow-400 border-yellow-500/30 hover:bg-yellow-500/10',
+    activeColor: 'bg-yellow-500 text-black border-yellow-500',
+    apply: { year: [0, 2005], votes: [2000, 999999], rank: [0, 99999], score: [0, 10] },
+    types: NON_MOVIE_TYPES
+  },
+  // Quadrant 4: Retro Cult
+  { 
+    id: 'retro_cult', 
+    label: 'Retro Cult', 
+    icon: <Zap size={12} />,
+    color: 'text-cyan-400 border-cyan-500/30 hover:bg-cyan-500/10',
+    activeColor: 'bg-cyan-500 text-black border-cyan-500',
+    apply: { year: [0, 2005], votes: [1000, 1999], rank: [0, 99999], score: [0, 10] },
+    types: NON_MOVIE_TYPES
+  },
+  // Movie Quadrant 1: Blockbusters
+  { 
+    id: 'movie_hits', 
+    label: 'Movie Hits', 
+    icon: <Clapperboard size={12} />,
+    color: 'text-red-400 border-red-500/30 hover:bg-red-500/10',
+    activeColor: 'bg-red-500 text-white border-red-500',
+    apply: { year: [0, 2030], votes: [2000, 999999], rank: [0, 99999], score: [0, 10] },
+    types: MOVIE_TYPES
+  },
+  // Movie Quadrant 2: Gems
+  { 
+    id: 'movie_gems', 
+    label: 'Movie Gems', 
+    icon: <Film size={12} />,
+    color: 'text-rose-300 border-rose-400/30 hover:bg-rose-400/10',
+    activeColor: 'bg-rose-400 text-white border-rose-400',
+    apply: { year: [0, 2030], votes: [500, 1999], rank: [0, 99999], score: [0, 10] },
+    types: MOVIE_TYPES
+  }
+];
+
 export function FilterPanel({
-  filters, setFilter, resetAll,
+  filters, setFilter, applyFilters, resetAll,
   selectedTypes, toggleType,
   searchText, setSearchText,
   hideCollected, setHideCollected,
@@ -39,6 +117,10 @@ export function FilterPanel({
   const [isOpen, setIsOpen] = useState(false);
   const showSeasonSelector = filters.year[0] === filters.year[1];
   const panelRef = useRef<HTMLDivElement>(null);
+  
+  // Ep Toggles
+  const [useShortSeries, setUseShortSeries] = useState(false); // Max 52
+  const [useSeriesOnly, setUseSeriesOnly] = useState(false);   // Min 2
 
   // Close panel when clicking outside
   useEffect(() => {
@@ -50,6 +132,18 @@ export function FilterPanel({
     if (isOpen) document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
+
+  // Logic: Watch for Movie selection to reset Eps logic
+  useEffect(() => {
+    if (selectedTypes.has("Movie")) {
+      if (useShortSeries) setUseShortSeries(false);
+      if (useSeriesOnly) setUseSeriesOnly(false);
+      
+      if (filters.eps[0] !== 0 || filters.eps[1] !== 9999) {
+         setFilter('eps', [0, 9999]);
+      }
+    }
+  }, [selectedTypes]);
 
   const updateMin = (key: string, val: number, limitMin: number, limitMax: number) => {
     let v = Math.max(limitMin, Math.min(val, limitMax));
@@ -67,12 +161,65 @@ export function FilterPanel({
     setFilter(key, [currentMin, v]);
   };
 
+  // --- Strict Matching Logic ---
+  const isPresetActive = (preset: typeof PRESETS[0]) => {
+    // 1. Check Types
+    if (selectedTypes.size !== preset.types.length) return false;
+    for (const t of preset.types) {
+      if (!selectedTypes.has(t)) return false;
+    }
+
+    // 2. Check Ranges
+    const f = filters;
+    const p = preset.apply;
+
+    // Use JSON stringify for simple array comparison to ensure strict match
+    if (f.year[0] !== p.year[0] || f.year[1] !== p.year[1]) return false;
+    if (f.votes[0] !== p.votes[0] || f.votes[1] !== p.votes[1]) return false;
+    if (f.rank[0] !== p.rank[0] || f.rank[1] !== p.rank[1]) return false;
+    if (f.score[0] !== p.score[0] || f.score[1] !== p.score[1]) return false;
+    
+    return true;
+  };
+
+  // --- Click Logic ---
+  const handlePresetClick = (preset: typeof PRESETS[0]) => {
+    if (isPresetActive(preset)) {
+      // Scenario A: Already active -> Toggle OFF (Reset to defaults)
+      applyFilters(DEFAULT_FILTERS, DEFAULT_TYPES);
+    } else {
+      // Scenario B: Inactive (or Modified) -> Apply Preset
+      // This forces the variables back to the preset's definition
+      applyFilters(preset.apply, new Set(preset.types));
+    }
+  };
+
+  const toggleShortSeries = () => {
+    const newVal = !useShortSeries;
+    setUseShortSeries(newVal);
+    
+    const min = useSeriesOnly ? 2 : 0;
+    const max = newVal ? 52 : 9999;
+    setFilter('eps', [min, max]);
+  };
+
+  const toggleSeriesOnly = () => {
+    const newVal = !useSeriesOnly;
+    setUseSeriesOnly(newVal);
+    
+    const min = newVal ? 2 : 0;
+    const max = useShortSeries ? 52 : 9999;
+    setFilter('eps', [min, max]);
+  };
+
   const seasonConfig = [
     {v:1, n:"Winter", i:<Snowflake size={14}/>, activeClass: "bg-sky-500/20 text-sky-300 border-sky-500/50"},
     {v:4, n:"Spring", i:<Wind size={14}/>,      activeClass: "bg-emerald-500/20 text-emerald-300 border-emerald-500/50"},
     {v:7, n:"Summer", i:<Sun size={14}/>,       activeClass: "bg-orange-500/20 text-orange-300 border-orange-500/50"},
     {v:10, n:"Fall", i:<CloudRain size={14}/>,  activeClass: "bg-amber-500/20 text-amber-300 border-amber-500/50"}
   ];
+
+  const isMovieSelected = selectedTypes.has("Movie");
 
   return (
     <div ref={panelRef} className="sticky top-0 z-50 transition-all">
@@ -159,8 +306,48 @@ export function FilterPanel({
              {/* Backdrop */}
             <div className="absolute inset-0 bg-neutral-950/95 backdrop-blur-xl" />
             
-            <div className="relative max-w-[1920px] mx-auto px-4 sm:px-6 py-8">
-              <div className="space-y-8">
+            <div className="relative max-w-[1920px] mx-auto px-4 sm:px-6 py-6">
+              <div className="space-y-6">
+
+                {/* --- Quick Presets Area --- */}
+                <div className="flex flex-col xl:flex-row items-center justify-between gap-4 pb-4 border-b border-neutral-800/50">
+                   <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+                      <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider py-1.5 mr-2">Presets</span>
+                      {PRESETS.map(preset => {
+                        const active = isPresetActive(preset);
+                        return (
+                          <button
+                            key={preset.id}
+                            onClick={() => handlePresetClick(preset)}
+                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[11px] font-bold transition-all ${active ? preset.activeColor : `bg-neutral-900/50 border-neutral-800 ${preset.color}`}`}
+                          >
+                            {preset.icon}
+                            <span>{preset.label}</span>
+                          </button>
+                        );
+                      })}
+                   </div>
+
+                   {/* Ep Toggles (Disabled if Movie) */}
+                   <div className={`flex items-center gap-2 transition-opacity duration-300 ${isMovieSelected ? "opacity-30 pointer-events-none" : "opacity-100"}`}>
+                     <button 
+                       onClick={toggleShortSeries}
+                       disabled={isMovieSelected}
+                       className={`flex items-center gap-2 px-4 py-1.5 rounded-lg border text-[11px] font-bold transition-all ${useShortSeries ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/50" : "bg-neutral-900/50 border-neutral-800 text-neutral-500 hover:border-neutral-700"}`}
+                     >
+                       <Zap size={12} className={useShortSeries ? "text-indigo-400" : "text-neutral-600"} />
+                       Max 52 Eps
+                     </button>
+                     <button 
+                       onClick={toggleSeriesOnly}
+                       disabled={isMovieSelected}
+                       className={`flex items-center gap-2 px-4 py-1.5 rounded-lg border text-[11px] font-bold transition-all ${useSeriesOnly ? "bg-teal-500/20 text-teal-300 border-teal-500/50" : "bg-neutral-900/50 border-neutral-800 text-neutral-500 hover:border-neutral-700"}`}
+                     >
+                       <Layers size={12} className={useSeriesOnly ? "text-teal-400" : "text-neutral-600"} />
+                       {'>'} 1 Ep
+                     </button>
+                   </div>
+                </div>
                 
                 {/* Row 1: Range Filters */}
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
@@ -178,7 +365,7 @@ export function FilterPanel({
                 </div>
 
                 {/* Row 2: Advanced Options & Season */}
-                <div className="flex flex-col xl:flex-row gap-8 pt-6 border-t border-neutral-800/50">
+                <div className="flex flex-col xl:flex-row gap-8 pt-4 border-t border-neutral-800/50">
                   
                   <div className="flex flex-col md:flex-row gap-8 items-start">
                     {/* Format Selector */}
