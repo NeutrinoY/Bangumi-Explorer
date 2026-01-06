@@ -5,9 +5,10 @@ import { useCollection } from "@/hooks/useCollection";
 import { AnimeCard } from "@/components/AnimeCard";
 import { FilterPanel, type StatusFilterType } from "@/components/FilterPanel";
 import { AnimeDetailModal } from "@/components/AnimeDetailModal";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, Suspense } from "react";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
+import { useUrlSync } from "@/hooks/useUrlSync";
 
 const INITIAL_FILTERS = {
   year: [0, 2030] as [number, number],
@@ -17,7 +18,7 @@ const INITIAL_FILTERS = {
   eps: [0, 9999] as [number, number],
 };
 
-export default function Home() {
+function BangumiExplorer() {
   const { data, loading } = useBangumiData();
   const { getStatus, updateStatus, isLoaded: isCollectionLoaded } = useCollection();
 
@@ -34,6 +35,16 @@ export default function Home() {
   // Pagination
   const [page, setPage] = useState(1);
   const pageSize = 60;
+
+  // --- URL Sync ---
+  useUrlSync(
+    filters, setFilters,
+    selectedTypes, setSelectedTypes,
+    searchText, setSearchText,
+    statusFilter, setStatusFilter,
+    sortBy, setSortBy,
+    page, setPage
+  );
 
   useEffect(() => {
     if (filters.year[0] !== filters.year[1]) setSelectedSeason(null);
@@ -80,14 +91,12 @@ export default function Home() {
         // 1. Status Filter
         const status = getStatus(item.id);
         if (statusFilter === 'todo') {
-          // Show Normal (null) and Wishlist. Hide Collected and Ignored.
           if (status === 'collected' || status === 'ignored') return false;
         } else if (statusFilter === 'collected') {
           if (status !== 'collected') return false;
         } else if (statusFilter === 'ignored') {
           if (status !== 'ignored') return false;
         }
-        // 'all' shows everything
 
         if ((item.score || 0) < filters.score[0] || (item.score || 0) > filters.score[1]) return false;
         
@@ -130,7 +139,7 @@ export default function Home() {
         switch (sortBy) {
           case "score": return (b.score || 0) - (a.score || 0);
           case "date": return (b.date || "").localeCompare(a.date || "");
-          case "collected": return (a.collection?.collect || 0) - (b.collection?.collect || 0); // Reverse for Collected? No, popularity usually means high first.
+          case "collected": return (b.collection?.collect || 0) - (a.collection?.collect || 0);
           case "rank":
           default:
             const ra = (a.rank && a.rank > 0) ? a.rank : 999999;
@@ -261,5 +270,17 @@ export default function Home() {
         )}
       </AnimatePresence>
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white gap-4 font-mono">
+        <div className="w-8 h-8 border-2 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    }>
+      <BangumiExplorer />
+    </Suspense>
   );
 }

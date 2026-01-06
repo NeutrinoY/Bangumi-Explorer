@@ -64,11 +64,18 @@ export function AnimeDetailModal({ item, onClose, status, onUpdateStatus }: Anim
 
         <div className="w-full md:w-[300px] bg-neutral-950 p-5 flex flex-col gap-5 border-r border-neutral-800 overflow-y-auto shrink-0 custom-scrollbar">
           
-          <div className="relative aspect-[2/3] w-full rounded-lg overflow-hidden shadow-2xl border border-neutral-800 group bg-neutral-900">
+          <div className="relative w-full rounded-lg overflow-hidden shadow-2xl border border-neutral-800 group bg-neutral-900">
             {item.img ? (
-              <Image src={item.img.replace("http://", "https://")} alt={item.name} fill className="object-cover" unoptimized />
+              <Image 
+                src={item.img.replace("http://", "https://")} 
+                alt={item.name} 
+                width={300}
+                height={450}
+                className="w-full h-auto object-cover" 
+                unoptimized 
+              />
             ) : (
-              <div className="flex h-full items-center justify-center text-neutral-800">No Image</div>
+              <div className="flex aspect-[2/3] items-center justify-center text-neutral-800">No Image</div>
             )}
           </div>
 
