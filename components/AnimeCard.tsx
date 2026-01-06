@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Check, Plus, Star, Trophy } from "lucide-react";
+import { Check, Plus } from "lucide-react";
 import type { BangumiSubject } from "@/hooks/useBangumiData";
 
 interface AnimeCardProps {
@@ -11,110 +11,97 @@ interface AnimeCardProps {
 }
 
 export function AnimeCard({ item, isCollected, onToggle }: AnimeCardProps) {
-  // Sophisticated color palette for scores
   const scoreColor = 
     item.score >= 8.5 ? "text-yellow-400" : 
-    item.score >= 7.5 ? "text-emerald-400" : 
+    item.score >= 7.5 ? "text-green-400" : 
     "text-neutral-500";
 
   return (
     <div
-      className={`group relative flex flex-col bg-neutral-900/30 rounded-xl overflow-hidden border transition-all duration-300 h-full ${
+      className={`group relative flex flex-col bg-neutral-900 rounded-lg overflow-hidden border transition-all duration-200 h-full ${
         isCollected
-          ? "border-emerald-500/30 bg-emerald-500/5 ring-1 ring-emerald-500/20"
-          : "border-white/5 hover:border-white/20 hover:bg-neutral-900/60 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/50"
+          ? "border-green-900/50 bg-green-900/5 opacity-60 hover:opacity-100"
+          : "border-neutral-800 hover:border-pink-500/50 hover:shadow-lg hover:shadow-pink-500/5 hover:-translate-y-1"
       }`}
     >
-      {/* 1. Poster Section (2:3 Aspect Ratio) */}
-      <div className="relative aspect-[2/3] w-full overflow-hidden bg-neutral-950 shrink-0">
+      {/* 1. Image Section */}
+      <div className="relative aspect-[3/4] w-full overflow-hidden bg-neutral-950 shrink-0">
         {item.img ? (
           <Image
             src={item.img.replace("http://", "https://")}
             alt={item.name}
             fill
-            className={`object-cover transition-transform duration-700 ease-out group-hover:scale-105 ${isCollected ? 'grayscale-[0.5]' : ''}`}
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
             sizes="(max-width: 768px) 50vw, 20vw"
             unoptimized
           />
         ) : (
-          <div className="flex h-full flex-col items-center justify-center text-neutral-800 gap-2">
-            <div className="w-8 h-8 rounded-full border-2 border-dashed border-neutral-800 animate-pulse" />
-          </div>
+          <div className="flex h-full items-center justify-center text-neutral-800 text-xs uppercase">NO IMAGE</div>
         )}
         
-        {/* Quick Action: Collection */}
+        {/* Rank Badge */}
+        {item.rank > 0 && (
+          <div className={`absolute top-2 left-2 px-1.5 py-0.5 rounded backdrop-blur-md border text-[10px] font-mono font-bold shadow-sm z-10 ${
+            item.rank <= 100 ? "bg-yellow-500/90 text-black border-yellow-400" :
+            "bg-black/60 text-white border-white/10"
+          }`}>
+            #{item.rank}
+          </div>
+        )}
+
         <button
           onClick={(e) => {
             e.preventDefault();
-            e.stopPropagation();
             onToggle(item.id);
           }}
-          className={`absolute top-2 right-2 p-2 rounded-full backdrop-blur-md border shadow-lg transition-all duration-300 z-10 ${
+          className={`absolute top-2 right-2 p-1.5 rounded-full shadow-sm backdrop-blur-md border transition-all z-10 ${
             isCollected
-              ? "bg-emerald-500 text-white border-emerald-400 scale-100 opacity-100"
-              : "bg-black/40 text-white/70 border-white/10 opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100 hover:bg-white hover:text-black hover:border-white"
+              ? "bg-green-500 border-green-400 text-white"
+              : "bg-black/40 border-white/10 text-white hover:bg-pink-500 hover:border-pink-500"
           }`}
         >
-          {isCollected ? <Check size={14} strokeWidth={3} /> : <Plus size={14} strokeWidth={3} />}
+          {isCollected ? <Check size={12} strokeWidth={3} /> : <Plus size={12} strokeWidth={3} />}
         </button>
         
-        {/* Subtle Gradient for legibility if we ever put text over image, mostly for aesthetic depth */}
-        <div className="absolute inset-0 ring-1 ring-inset ring-black/10 pointer-events-none rounded-xl" />
+        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-neutral-900 via-neutral-900/80 to-transparent opacity-80" />
       </div>
 
-      {/* 2. Content Section */}
-      <div className="p-3.5 flex flex-col flex-1 gap-2.5">
+      {/* 2. Text Section */}
+      <div className="p-3 flex flex-col gap-3 flex-1">
         
-        {/* Title */}
         <div className="min-w-0">
-          <h3 className="text-[13px] font-bold text-neutral-200 leading-5 line-clamp-2 tracking-wide" title={item.name}>
-            {item.name}
+          <h3 className="text-sm font-bold text-neutral-100 leading-snug line-clamp-1" title={item.cn || item.name}>
+            {item.cn || item.name}
           </h3>
+          <p className="text-[10px] text-neutral-500 truncate font-mono mt-0.5" title={item.name}>
+            {item.name}
+          </p>
         </div>
 
-        {/* Metadata Line: Year • Type • Eps */}
-        <div className="flex items-center gap-2 text-[10px] font-medium text-neutral-500 font-mono tracking-tight">
-          <span className="text-neutral-400">{item.year || '----'}</span>
-          <span className="w-0.5 h-2 bg-neutral-800 rounded-full" />
-          <span>{item.type}</span>
-          {item.eps > 0 && (
-            <>
-              <span className="w-0.5 h-2 bg-neutral-800 rounded-full" />
-              <span>{item.eps} EP</span>
-            </>
-          )}
+        {/* Specs Badge (Prominent Layout) */}
+        <div className="flex items-center justify-between text-neutral-300 font-medium text-xs bg-neutral-800/50 rounded-md px-2 py-1.5 border border-neutral-800">
+          <span className="font-mono">{item.year || '----'}</span>
+          <div className="w-px h-3 bg-neutral-700"></div>
+          <span className="uppercase tracking-wider text-[10px]">{item.type}</span>
+          <div className="w-px h-3 bg-neutral-700"></div>
+          <span>{item.eps ? `${item.eps} ep` : '?'}</span>
         </div>
 
-        {/* Spacer */}
-        <div className="flex-1" />
-
-        {/* Footer: Metrics */}
-        <div className="flex items-end justify-between pt-3 border-t border-white/5">
-          
-          {/* Left: Score */}
-          <div className="flex flex-col gap-0.5">
-            <span className="text-[9px] uppercase tracking-wider text-neutral-600 font-bold">Score</span>
-            <div className={`flex items-center gap-1.5 ${scoreColor}`}>
-              <span className="text-lg font-bold font-mono leading-none tracking-tighter">
-                {item.score?.toFixed(1) || '-.-'}
-              </span>
-            </div>
+        {/* Metrics Row */}
+        <div className="mt-auto pt-1 flex items-end justify-between">
+          <div className="flex flex-col">
+            <span className="text-[9px] text-neutral-600 font-bold uppercase tracking-wider">Score</span>
+            <span className={`text-xl font-bold font-mono leading-none ${scoreColor}`}>
+              {item.score?.toFixed(1)}
+            </span>
           </div>
           
-          {/* Right: Rank & Votes */}
-          <div className="flex flex-col items-end gap-0.5 text-neutral-500">
-             <div className="flex items-center gap-1.5">
-               {item.rank > 0 && (
-                 <span className={`text-[10px] font-mono font-bold px-1 rounded ${item.rank <= 100 ? 'bg-yellow-500/20 text-yellow-500' : 'bg-neutral-800 text-neutral-400'}`}>
-                   #{item.rank}
-                 </span>
-               )}
-             </div>
-             <span className="text-[9px] font-mono text-neutral-600">
-               {item.total > 0 ? `${(item.total / 1000).toFixed(1)}k votes` : '-'}
-             </span>
+          <div className="flex flex-col items-end">
+            <span className="text-[9px] text-neutral-600 font-bold uppercase tracking-wider">Votes</span>
+            <span className="text-xs text-neutral-300 font-mono tabular-nums leading-none mb-0.5">
+              {item.total.toLocaleString()}
+            </span>
           </div>
-
         </div>
 
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, SlidersHorizontal, Calendar, Star, Users, Layers, Trophy, X, Snowflake, Wind, Sun, CloudRain, ArrowDownUp } from "lucide-react";
+import { Search, SlidersHorizontal, Calendar, Star, Users, Layers, Trophy, X, Snowflake, Wind, Sun, CloudRain } from "lucide-react";
 import { useState } from "react";
 
 interface FilterPanelProps {
@@ -51,128 +51,109 @@ export function FilterPanel({
   };
 
   return (
-    <div className="sticky top-0 z-50 bg-neutral-950/80 backdrop-blur-xl border-b border-white/5 transition-all">
+    <div className="sticky top-0 z-50 bg-neutral-950/95 backdrop-blur-md border-b border-neutral-800 shadow-xl transition-all">
       <div className="max-w-[1920px] mx-auto px-4 sm:px-6 py-3">
         
-        {/* Compact Header */}
-        <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
-          
-          {/* Brand & Counts */}
-          <div className="flex items-center gap-4 shrink-0 w-full md:w-auto justify-between md:justify-start">
-            <div className="flex flex-col leading-none">
-              <span className="text-sm font-black tracking-tight text-neutral-100">BANGUMI<span className="text-neutral-600">.DATA</span></span>
-              <span className="text-[9px] text-neutral-500 font-mono mt-1">
-                {showingCount.toLocaleString()} / {totalCount.toLocaleString()}
-              </span>
+        {/* Top Bar */}
+        <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+          <div className="flex items-center gap-6 shrink-0 w-full md:w-auto justify-between md:justify-start">
+            <div className="flex flex-col">
+              <h1 className="text-xl font-bold bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent tracking-tight">
+                BANGUMI <span className="text-white font-mono font-light">EXPLORER</span>
+              </h1>
+              <div className="text-[10px] text-neutral-500 font-mono tracking-wider uppercase">
+                {showingCount.toLocaleString()} / {totalCount.toLocaleString()} ITEMS
+              </div>
             </div>
-            
-            <button onClick={() => setIsOpen(!isOpen)} className={`md:hidden p-2 rounded-full border transition-colors ${isOpen ? 'bg-neutral-100 text-black border-neutral-100' : 'bg-neutral-900 border-neutral-800 text-neutral-400'}`}>
-              <SlidersHorizontal size={16} />
+            <button onClick={() => setIsOpen(!isOpen)} className={`md:hidden p-2 rounded-lg border ${isOpen ? 'bg-pink-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400'}`}>
+              <SlidersHorizontal size={18} />
             </button>
           </div>
 
-          {/* Search Bar - Centered & Wide */}
-          <div className="relative w-full max-w-lg group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 group-focus-within:text-neutral-200 transition-colors" size={14} />
+          {/* Search Bar */}
+          <div className="relative w-full max-w-2xl group mx-auto hidden md:block">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 group-focus-within:text-pink-500 transition-colors" size={16} />
             <input
               type="text"
-              placeholder="Search by name, studio, director..."
+              placeholder="Search title, studio, director..."
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              className="w-full bg-neutral-900/50 border border-neutral-800 text-neutral-200 text-xs rounded-full pl-9 pr-4 py-2 focus:outline-none focus:bg-neutral-900 focus:border-neutral-700 transition-all placeholder:text-neutral-600"
+              className="w-full bg-neutral-900 border border-neutral-800 text-neutral-200 text-sm rounded-full pl-11 pr-4 py-2.5 focus:outline-none focus:border-pink-500/50 transition-all"
             />
           </div>
 
-          {/* Right Actions */}
-          <div className="hidden md:flex items-center gap-2">
-            
-            <div className="relative group">
-              <ArrowDownUp size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none" />
-              <select 
-                value={sortBy} 
-                onChange={(e) => setSortBy(e.target.value)} 
-                className="appearance-none bg-neutral-900/50 border border-neutral-800 text-neutral-400 text-xs font-medium rounded-full pl-9 pr-4 py-1.5 focus:outline-none focus:border-neutral-600 cursor-pointer hover:bg-neutral-900 transition-colors"
-              >
-                <option value="rank">Rank</option>
-                <option value="score">Score</option>
-                <option value="date">Date</option>
-                <option value="collected">Votes</option>
-              </select>
-            </div>
-
+          {/* Actions */}
+          <div className="hidden md:flex items-center gap-3">
+            <select 
+              value={sortBy} 
+              onChange={(e) => setSortBy(e.target.value)} 
+              className="bg-neutral-900 border border-neutral-800 text-neutral-400 text-xs font-bold rounded-lg px-3 py-2.5 focus:outline-none focus:border-pink-500 cursor-pointer"
+            >
+              <option value="rank">Sort: Rank</option>
+              <option value="score">Sort: Score</option>
+              <option value="date">Sort: Date</option>
+              <option value="collected">Sort: Popularity</option>
+            </select>
             <button 
               onClick={() => setIsOpen(!isOpen)} 
-              className={`flex items-center gap-2 px-4 py-1.5 rounded-full border text-xs font-medium transition-all ${isOpen ? 'bg-neutral-100 text-black border-neutral-100' : 'bg-neutral-900/50 text-neutral-400 border-neutral-800 hover:bg-neutral-900 hover:text-neutral-200'}`}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-full border text-xs font-bold tracking-wide transition-all ${isOpen ? 'bg-neutral-800 text-white border-neutral-700' : 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:border-neutral-600'}`}
             >
-              <SlidersHorizontal size={12} /> Filters
+              <SlidersHorizontal size={14} /> FILTERS
             </button>
           </div>
         </div>
 
         {/* Expanded Controls */}
         {isOpen && (
-          <div className="mt-4 pt-4 border-t border-white/5 animate-in slide-in-from-top-2 fade-in duration-200 pb-2">
+          <div className="mt-6 pt-6 border-t border-neutral-800/50 animate-in slide-in-from-top-2 fade-in duration-200">
             
-            {/* Row 1: Numeric Filters */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
-              <FilterInputGroup icon={<Calendar size={12}/>} label="Year" min={filters.year[0]} max={filters.year[1]} onMin={(v) => updateMin('year', v)} onMax={(v) => updateMax('year', v)} />
-              <FilterInputGroup icon={<Star size={12}/>} label="Score" min={filters.score[0]} max={filters.score[1]} step={0.1} onMin={(v) => updateMin('score', v)} onMax={(v) => updateMax('score', v)} />
-              <FilterInputGroup icon={<Trophy size={12}/>} label="Rank" min={filters.rank[0]} max={filters.rank[1]} onMin={(v) => updateMin('rank', v)} onMax={(v) => updateMax('rank', v)} />
-              <FilterInputGroup icon={<Users size={12}/>} label="Votes" min={filters.votes[0]} max={filters.votes[1]} onMin={(v) => updateMin('votes', v)} onMax={(v) => updateMax('votes', v)} />
-              <FilterInputGroup icon={<Layers size={12}/>} label="Eps" min={filters.eps[0]} max={filters.eps[1]} onMin={(v) => updateMin('eps', v)} onMax={(v) => updateMax('eps', v)} />
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+              <FilterInputGroup icon={<Calendar size={14}/>} label="Year" min={filters.year[0]} max={filters.year[1]} onMin={(v) => updateMin('year', v)} onMax={(v) => updateMax('year', v)} />
+              <FilterInputGroup icon={<Star size={14}/>} label="Score" min={filters.score[0]} max={filters.score[1]} step={0.1} onMin={(v) => updateMin('score', v)} onMax={(v) => updateMax('score', v)} />
+              <FilterInputGroup icon={<Trophy size={14}/>} label="Rank" min={filters.rank[0]} max={filters.rank[1]} onMin={(v) => updateMin('rank', v)} onMax={(v) => updateMax('rank', v)} />
+              <FilterInputGroup icon={<Users size={14}/>} label="Votes" min={filters.votes[0]} max={filters.votes[1]} onMin={(v) => updateMin('votes', v)} onMax={(v) => updateMax('votes', v)} />
+              <FilterInputGroup icon={<Layers size={14}/>} label="Episodes" min={filters.eps[0]} max={filters.eps[1]} onMin={(v) => updateMin('eps', v)} onMax={(v) => updateMax('eps', v)} />
             </div>
 
-            {/* Row 2: Toggles & Actions */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              
-              <div className="flex flex-wrap items-center gap-4">
-                {/* Types */}
-                <div className="flex items-center bg-neutral-900/50 rounded-full p-1 border border-neutral-800">
-                  {["TV", "Movie", "OVA", "Web"].map(type => (
-                    <button 
-                      key={type} 
-                      onClick={() => toggleType(type)} 
-                      className={`px-3 py-1 rounded-full text-[10px] font-bold transition-all ${selectedTypes.has(type) ? "bg-neutral-700 text-white shadow-sm" : "text-neutral-500 hover:text-neutral-300"}`}
-                    >
-                      {type}
-                    </button>
-                  ))}
+            <div className="flex flex-wrap items-center justify-between gap-6 border-t border-neutral-800/50 pt-5">
+              <div className="flex flex-wrap items-center gap-6">
+                <div className="flex items-center gap-4">
+                  <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Format</span>
+                  <div className="flex gap-1.5">
+                    {["TV", "Movie", "OVA", "Web"].map(type => (
+                      <button key={type} onClick={() => toggleType(type)} className={`px-4 py-1.5 rounded-lg text-[11px] font-bold border transition-all ${selectedTypes.has(type) ? "bg-white text-black border-white" : "bg-neutral-900 text-neutral-500 border-neutral-800"}`}>{type}</button>
+                    ))}
+                  </div>
                 </div>
 
-                {/* Season (Conditional) */}
                 {showSeasonSelector && (
-                  <div className="flex items-center gap-1">
-                    {[
-                      {v:1, n:"Win", i:<Snowflake size={12}/>},
-                      {v:4, n:"Spr", i:<Wind size={12}/>},
-                      {v:7, n:"Sum", i:<Sun size={12}/>},
-                      {v:10, n:"Fall", i:<CloudRain size={12}/>}
-                    ].map(s => (
-                      <button 
-                        key={s.v} 
-                        onClick={() => setSelectedSeason(selectedSeason === s.v ? null : s.v)} 
-                        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border text-[10px] font-bold transition-all ${selectedSeason === s.v ? "bg-pink-500 text-white border-pink-500" : "bg-neutral-900/30 text-neutral-500 border-neutral-800 hover:border-neutral-700"}`}
-                      >
-                        {s.i} {s.n}
-                      </button>
-                    ))}
+                  <div className="flex items-center gap-4 border-l border-neutral-800 pl-6">
+                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Season</span>
+                    <div className="flex gap-2">
+                      {[
+                        {v:1, n:"Winter", i:<Snowflake size={14}/>},
+                        {v:4, n:"Spring", i:<Wind size={14}/>},
+                        {v:7, n:"Summer", i:<Sun size={14}/>},
+                        {v:10, n:"Fall", i:<CloudRain size={14}/>}
+                      ].map(s => (
+                        <button key={s.v} onClick={() => setSelectedSeason(selectedSeason === s.v ? null : s.v)} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[11px] font-bold transition-all ${selectedSeason === s.v ? "bg-pink-500 text-white border-pink-400" : "bg-neutral-900 text-neutral-500 border-neutral-800 hover:border-neutral-700"}`}>{s.i} {s.n}</button>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
 
-              {/* Reset & Hide */}
-              <div className="flex items-center gap-2 md:ml-auto">
-                 <button 
+              <div className="flex items-center gap-3">
+                <button 
                   onClick={() => setHideCollected(!hideCollected)} 
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold border transition-all ${hideCollected ? "bg-green-900/20 text-green-400 border-green-900/50" : "bg-neutral-900/30 text-neutral-500 border-neutral-800 hover:bg-neutral-900"}`}
+                  className={`flex items-center gap-2 px-5 py-1.5 rounded-full text-[11px] font-bold border transition-all ${hideCollected ? "bg-pink-500/10 text-pink-500 border-pink-500/50" : "bg-neutral-900 text-neutral-500 border-neutral-800"}`}
                 >
-                  {hideCollected ? <X size={10}/> : null} {hideCollected ? "Hidden" : "Show All"}
+                  {hideCollected ? <X size={12}/> : null} {hideCollected ? "Hidden Collected" : "Show All"}
                 </button>
-                <button onClick={resetAll} className="px-3 py-1.5 rounded-full text-[10px] font-bold text-neutral-500 hover:text-white transition-colors">
-                  Reset
+                <button onClick={resetAll} className="px-5 py-1.5 rounded-full text-[11px] font-bold border border-neutral-800 text-neutral-500 hover:text-white hover:border-neutral-600 transition-all">
+                  RESET
                 </button>
               </div>
-
             </div>
           </div>
         )}
@@ -183,15 +164,14 @@ export function FilterPanel({
 
 function FilterInputGroup({ icon, label, min, max, onMin, onMax, step = 1 }: any) {
   return (
-    <div className="flex items-center gap-2 bg-neutral-900/30 border border-neutral-800/50 rounded-lg px-2 py-1.5 hover:border-neutral-700 transition-colors">
-      <div className="text-neutral-500 shrink-0">{icon}</div>
-      <div className="flex flex-col flex-1 min-w-0">
-        <span className="text-[9px] font-bold uppercase tracking-wider text-neutral-600 mb-0.5">{label}</span>
-        <div className="flex items-center gap-1">
-          <input type="number" step={step} value={min} onChange={e => onMin(Number(e.target.value))} className="w-full bg-transparent p-0 text-[11px] font-mono text-neutral-300 text-center focus:outline-none focus:text-white" />
-          <span className="text-neutral-700 text-[10px]">-</span>
-          <input type="number" step={step} value={max} onChange={e => onMax(Number(e.target.value))} className="w-full bg-transparent p-0 text-[11px] font-mono text-neutral-300 text-center focus:outline-none focus:text-white" />
-        </div>
+    <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-3 flex flex-col gap-2 group hover:border-neutral-700 transition-all">
+      <div className="flex items-center gap-2 text-neutral-500 group-hover:text-neutral-400 transition-colors">
+        {icon} <span className="text-[10px] font-bold uppercase tracking-wider">{label}</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <input type="number" step={step} value={min} onChange={e => onMin(Number(e.target.value))} className="w-full bg-neutral-950 border border-neutral-800 rounded px-2 py-1 text-xs text-white text-center focus:outline-none focus:border-pink-500/40" />
+        <span className="text-neutral-600">-</span>
+        <input type="number" step={step} value={max} onChange={e => onMax(Number(e.target.value))} className="w-full bg-neutral-950 border border-neutral-800 rounded px-2 py-1 text-xs text-white text-center focus:outline-none focus:border-pink-500/40" />
       </div>
     </div>
   );
