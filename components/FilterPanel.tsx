@@ -1,8 +1,10 @@
 "use client";
 
-import { Search, SlidersHorizontal, Calendar, Star, Users, Layers, Trophy, X, Snowflake, Wind, Sun, CloudRain, ArrowDownUp, Check, ChevronDown, Flame, Gem, Hourglass, Zap, Clapperboard, Film } from "lucide-react";
+import { Search, SlidersHorizontal, Calendar, Star, Users, Layers, Trophy, X, Snowflake, Wind, Sun, CloudRain, Check, ChevronDown, Flame, Gem, Hourglass, Zap, Clapperboard, Film, Bookmark, Ban, ListFilter } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+
+export type StatusFilterType = 'todo' | 'collected' | 'ignored' | 'all';
 
 interface FilterPanelProps {
   filters: {
@@ -18,7 +20,9 @@ interface FilterPanelProps {
 
   selectedTypes: Set<string>; toggleType: (t: string) => void;
   searchText: string; setSearchText: (v: string) => void;
-  hideCollected: boolean; setHideCollected: (v: boolean) => void;
+  
+  statusFilter: StatusFilterType;
+  setStatusFilter: (v: StatusFilterType) => void;
   
   selectedSeason: number | null;
   setSelectedSeason: (v: number | null) => void;
@@ -27,7 +31,7 @@ interface FilterPanelProps {
   totalCount: number; showingCount: number;
 }
 
-// Global Defaults for "Reset" logic (User's "Default State")
+// Global Defaults
 const DEFAULT_TYPES = new Set(["TV", "Movie", "OVA", "Web"]);
 const DEFAULT_FILTERS = {
   year: [0, 2030], 
@@ -36,23 +40,19 @@ const DEFAULT_FILTERS = {
   score: [0, 10]
 };
 
-// Define Types for strict matching
 const NON_MOVIE_TYPES = ["TV", "OVA", "Web"];
 const MOVIE_TYPES = ["Movie"];
 
 const PRESETS = [
-  // Quadrant 1: Modern Hits
   { 
     id: 'modern_hits', 
     label: 'Modern Hits', 
     icon: <Flame size={12} />,
-    // Fix: Explicitly set text color for inactive state
     color: 'text-orange-400 border-orange-500/30 hover:bg-orange-500/10',
     activeColor: 'bg-orange-500 text-white border-orange-500',
     apply: { year: [2006, 2026], votes: [2000, 999999], rank: [0, 99999], score: [0, 10] },
     types: NON_MOVIE_TYPES
   },
-  // Quadrant 2: Modern Gems
   { 
     id: 'modern_gems', 
     label: 'Modern Gems', 
@@ -62,7 +62,6 @@ const PRESETS = [
     apply: { year: [2006, 2026], votes: [1000, 1999], rank: [0, 99999], score: [0, 10] },
     types: NON_MOVIE_TYPES
   },
-  // Quadrant 3: Retro Classics
   { 
     id: 'retro_classics', 
     label: 'Retro Classics', 
@@ -72,7 +71,6 @@ const PRESETS = [
     apply: { year: [0, 2005], votes: [2000, 999999], rank: [0, 99999], score: [0, 10] },
     types: NON_MOVIE_TYPES
   },
-  // Quadrant 4: Retro Cult
   { 
     id: 'retro_cult', 
     label: 'Retro Cult', 
@@ -82,7 +80,6 @@ const PRESETS = [
     apply: { year: [0, 2005], votes: [1000, 1999], rank: [0, 99999], score: [0, 10] },
     types: NON_MOVIE_TYPES
   },
-  // Movie Quadrant 1: Blockbusters
   { 
     id: 'movie_hits', 
     label: 'Movie Hits', 
@@ -92,7 +89,6 @@ const PRESETS = [
     apply: { year: [0, 2030], votes: [2000, 999999], rank: [0, 99999], score: [0, 10] },
     types: MOVIE_TYPES
   },
-  // Movie Quadrant 2: Gems
   { 
     id: 'movie_gems', 
     label: 'Movie Gems', 
@@ -108,7 +104,7 @@ export function FilterPanel({
   filters, setFilter, applyFilters, resetAll,
   selectedTypes, toggleType,
   searchText, setSearchText,
-  hideCollected, setHideCollected,
+  statusFilter, setStatusFilter,
   selectedSeason, setSelectedSeason,
   sortBy, setSortBy,
   totalCount, showingCount
@@ -118,11 +114,9 @@ export function FilterPanel({
   const showSeasonSelector = filters.year[0] === filters.year[1];
   const panelRef = useRef<HTMLDivElement>(null);
   
-  // Ep Toggles
-  const [useShortSeries, setUseShortSeries] = useState(false); // Max 52
-  const [useSeriesOnly, setUseSeriesOnly] = useState(false);   // Min 2
+  const [useShortSeries, setUseShortSeries] = useState(false);
+  const [useSeriesOnly, setUseSeriesOnly] = useState(false);
 
-  // Close panel when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (panelRef.current && !panelRef.current.contains(event.target as Node)) {
@@ -133,7 +127,6 @@ export function FilterPanel({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
-  // Logic: Watch for Movie selection to reset Eps logic
   useEffect(() => {
     if (selectedTypes.has("Movie")) {
       if (useShortSeries) setUseShortSeries(false);
@@ -161,19 +154,15 @@ export function FilterPanel({
     setFilter(key, [currentMin, v]);
   };
 
-  // --- Strict Matching Logic ---
   const isPresetActive = (preset: typeof PRESETS[0]) => {
-    // 1. Check Types
     if (selectedTypes.size !== preset.types.length) return false;
     for (const t of preset.types) {
       if (!selectedTypes.has(t)) return false;
     }
 
-    // 2. Check Ranges
     const f = filters;
     const p = preset.apply;
 
-    // Use JSON stringify for simple array comparison to ensure strict match
     if (f.year[0] !== p.year[0] || f.year[1] !== p.year[1]) return false;
     if (f.votes[0] !== p.votes[0] || f.votes[1] !== p.votes[1]) return false;
     if (f.rank[0] !== p.rank[0] || f.rank[1] !== p.rank[1]) return false;
@@ -182,14 +171,10 @@ export function FilterPanel({
     return true;
   };
 
-  // --- Click Logic ---
   const handlePresetClick = (preset: typeof PRESETS[0]) => {
     if (isPresetActive(preset)) {
-      // Scenario A: Already active -> Toggle OFF (Reset to defaults)
       applyFilters(DEFAULT_FILTERS, DEFAULT_TYPES);
     } else {
-      // Scenario B: Inactive (or Modified) -> Apply Preset
-      // This forces the variables back to the preset's definition
       applyFilters(preset.apply, new Set(preset.types));
     }
   };
@@ -197,7 +182,6 @@ export function FilterPanel({
   const toggleShortSeries = () => {
     const newVal = !useShortSeries;
     setUseShortSeries(newVal);
-    
     const min = useSeriesOnly ? 2 : 0;
     const max = newVal ? 52 : 9999;
     setFilter('eps', [min, max]);
@@ -206,7 +190,6 @@ export function FilterPanel({
   const toggleSeriesOnly = () => {
     const newVal = !useSeriesOnly;
     setUseSeriesOnly(newVal);
-    
     const min = newVal ? 2 : 0;
     const max = useShortSeries ? 52 : 9999;
     setFilter('eps', [min, max]);
@@ -219,11 +202,17 @@ export function FilterPanel({
     {v:10, n:"Fall", i:<CloudRain size={14}/>,  activeClass: "bg-amber-500/20 text-amber-300 border-amber-500/50"}
   ];
 
+  const statusOptions = [
+    { id: 'todo', label: 'Todo', icon: <ListFilter size={12}/>, activeClass: "bg-neutral-100 text-black border-white" },
+    { id: 'collected', label: 'Saved', icon: <Check size={12}/>, activeClass: "bg-green-500 text-white border-green-400" },
+    { id: 'ignored', label: 'Ignored', icon: <Ban size={12}/>, activeClass: "bg-red-500 text-white border-red-400" },
+    { id: 'all', label: 'All', icon: <Layers size={12}/>, activeClass: "bg-neutral-800 text-white border-neutral-600" },
+  ];
+
   const isMovieSelected = selectedTypes.has("Movie");
 
   return (
     <div ref={panelRef} className="sticky top-0 z-50 transition-all">
-      {/* Main Header Background */}
       <div className="absolute inset-0 bg-neutral-950/80 backdrop-blur-xl border-b border-neutral-800 shadow-sm z-0"></div>
 
       <div className="max-w-[1920px] mx-auto px-4 sm:px-6 py-4 relative z-10">
@@ -267,7 +256,6 @@ export function FilterPanel({
           {/* Actions */}
           <div className="hidden md:flex items-center gap-6">
             
-            {/* Custom Sort Select (Modernized) */}
             <SortSelect value={sortBy} onChange={setSortBy} />
 
             <button 
@@ -328,7 +316,6 @@ export function FilterPanel({
                       })}
                    </div>
 
-                   {/* Ep Toggles (Disabled if Movie) */}
                    <div className={`flex items-center gap-2 transition-opacity duration-300 ${isMovieSelected ? "opacity-30 pointer-events-none" : "opacity-100"}`}>
                      <button 
                        onClick={toggleShortSeries}
@@ -368,7 +355,6 @@ export function FilterPanel({
                 <div className="flex flex-col xl:flex-row gap-8 pt-4 border-t border-neutral-800/50">
                   
                   <div className="flex flex-col md:flex-row gap-8 items-start">
-                    {/* Format Selector */}
                     <div className="flex flex-col gap-3">
                       <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider pl-1">Format</span>
                       <div className="flex gap-2">
@@ -384,7 +370,6 @@ export function FilterPanel({
                       </div>
                     </div>
 
-                    {/* Season Selector (Unified Design) */}
                     <AnimatePresence mode="popLayout">
                       {showSeasonSelector && (
                         <motion.div 
@@ -423,15 +408,21 @@ export function FilterPanel({
 
                   {/* Toggles & Reset */}
                   <div className="xl:ml-auto flex items-end gap-3">
-                    <button 
-                      onClick={() => setHideCollected(!hideCollected)} 
-                      className={`flex items-center gap-2 px-5 py-2 rounded-lg text-[11px] font-bold border transition-all ${hideCollected ? "bg-green-900/10 text-green-400 border-green-500/30" : "bg-neutral-900/50 text-neutral-500 border-neutral-800 hover:bg-neutral-800"}`}
-                    >
-                       <div className={`w-3 h-3 rounded-full border flex items-center justify-center ${hideCollected ? "border-green-500 bg-green-500" : "border-neutral-600"}`}>
-                          {hideCollected && <Check size={8} className="text-black" strokeWidth={4} />}
-                       </div>
-                       Hide Collected
-                    </button>
+                     {/* Status Filter Tabs */}
+                     <div className="flex bg-neutral-900 rounded-lg p-1 border border-neutral-800">
+                        {statusOptions.map(opt => (
+                          <button
+                            key={opt.id}
+                            onClick={() => setStatusFilter(opt.id as StatusFilterType)}
+                            className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all border ${
+                              statusFilter === opt.id ? opt.activeClass : "border-transparent text-neutral-500 hover:text-neutral-300"
+                            }`}
+                          >
+                            {opt.icon} <span className="hidden md:inline">{opt.label}</span>
+                          </button>
+                        ))}
+                     </div>
+
                     <button onClick={resetAll} className="px-6 py-2 rounded-lg text-[11px] font-bold border border-transparent text-neutral-500 hover:text-red-400 hover:bg-red-900/10 transition-all flex items-center gap-2">
                       <X size={14} /> Clear Filters
                     </button>
@@ -447,8 +438,7 @@ export function FilterPanel({
   );
 }
 
-// --- Sub Components ---
-
+// Sub components remain unchanged...
 function SortSelect({ value, onChange }: { value: string, onChange: (v: string) => void }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);

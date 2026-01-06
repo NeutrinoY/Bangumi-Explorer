@@ -2,18 +2,42 @@
 
 import { useState, useEffect, useCallback } from "react";
 
-const STORAGE_KEY = "bangumi_collection_v1";
+const STORAGE_KEY_V1 = "bangumi_collection_v1";
+const STORAGE_KEY_V2 = "bangumi_collection_v2";
+
+export type ItemStatus = 'collected' | 'wishlist' | 'ignored';
+
+interface CollectionStore {
+  [id: number]: ItemStatus;
+}
 
 export function useCollection() {
-  const [collectedIds, setCollectedIds] = useState<Set<number>>(new Set());
+  const [collection, setCollection] = useState<CollectionStore>({});
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // 初始化加载
+  // Load & Migrate
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        setCollectedIds(new Set(JSON.parse(stored)));
+      const v2Data = localStorage.getItem(STORAGE_KEY_V2);
+      
+      if (v2Data) {
+        // Load V2 directly
+        setCollection(JSON.parse(v2Data));
+      } else {
+        // Try Migrate V1
+        const v1Data = localStorage.getItem(STORAGE_KEY_V1);
+        if (v1Data) {
+          const ids = JSON.parse(v1Data);
+          const newCollection: CollectionStore = {};
+          if (Array.isArray(ids)) {
+            ids.forEach((id: number) => {
+              newCollection[id] = 'collected';
+            });
+          }
+          setCollection(newCollection);
+          // Save immediately to V2
+          localStorage.setItem(STORAGE_KEY_V2, JSON.stringify(newCollection));
+        }
       }
     } catch (e) {
       console.error("Failed to load collection", e);
@@ -22,33 +46,35 @@ export function useCollection() {
     }
   }, []);
 
-  // 保存到 LocalStorage
-  const save = (newSet: Set<number>) => {
+  const save = (newCollection: CollectionStore) => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(newSet)));
-      setCollectedIds(newSet);
+      localStorage.setItem(STORAGE_KEY_V2, JSON.stringify(newCollection));
+      setCollection(newCollection);
     } catch (e) {
       console.error("Failed to save collection", e);
     }
   };
 
-  const toggle = useCallback((id: number) => {
-    setCollectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
+  // status: pass null to remove (reset to Normal)
+  const updateStatus = useCallback((id: number, status: ItemStatus | null) => {
+    setCollection((prev) => {
+      const next = { ...prev };
+      if (status === null) {
+        delete next[id];
       } else {
-        next.add(id);
+        next[id] = status;
       }
       save(next);
       return next;
     });
   }, []);
 
-  const has = useCallback(
-    (id: number) => collectedIds.has(id),
-    [collectedIds]
+  const getStatus = useCallback(
+    (id: number): ItemStatus | null => {
+      return collection[id] || null;
+    },
+    [collection]
   );
 
-  return { collectedIds, toggle, has, isLoaded };
+  return { collection, updateStatus, getStatus, isLoaded };
 }

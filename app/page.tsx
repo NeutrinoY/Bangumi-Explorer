@@ -3,7 +3,7 @@
 import { useBangumiData, type BangumiSubject } from "@/hooks/useBangumiData";
 import { useCollection } from "@/hooks/useCollection";
 import { AnimeCard } from "@/components/AnimeCard";
-import { FilterPanel } from "@/components/FilterPanel";
+import { FilterPanel, type StatusFilterType } from "@/components/FilterPanel";
 import { AnimeDetailModal } from "@/components/AnimeDetailModal";
 import { useState, useMemo, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
@@ -19,7 +19,7 @@ const INITIAL_FILTERS = {
 
 export default function Home() {
   const { data, loading } = useBangumiData();
-  const { collectedIds, toggle, isLoaded: isCollectionLoaded } = useCollection();
+  const { getStatus, updateStatus, isLoaded: isCollectionLoaded } = useCollection();
 
   const [selectedItem, setSelectedItem] = useState<BangumiSubject | null>(null);
 
@@ -27,7 +27,7 @@ export default function Home() {
   const [filters, setFilters] = useState(INITIAL_FILTERS);
   const [selectedTypes, setSelectedTypes] = useState<Set<string>>(new Set(["TV", "Movie", "OVA", "Web"]));
   const [searchText, setSearchText] = useState("");
-  const [hideCollected, setHideCollected] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<StatusFilterType>('todo');
   const [sortBy, setSortBy] = useState("rank");
   const [selectedSeason, setSelectedSeason] = useState<number | null>(null);
 
@@ -58,7 +58,7 @@ export default function Home() {
     setFilters(INITIAL_FILTERS);
     setSelectedTypes(new Set(["TV", "Movie", "OVA", "Web"]));
     setSearchText("");
-    setHideCollected(false);
+    setStatusFilter('todo');
     setSelectedSeason(null);
     setSortBy("rank");
     setPage(1);
@@ -77,6 +77,18 @@ export default function Home() {
 
     return data
       .filter((item) => {
+        // 1. Status Filter
+        const status = getStatus(item.id);
+        if (statusFilter === 'todo') {
+          // Show Normal (null) and Wishlist. Hide Collected and Ignored.
+          if (status === 'collected' || status === 'ignored') return false;
+        } else if (statusFilter === 'collected') {
+          if (status !== 'collected') return false;
+        } else if (statusFilter === 'ignored') {
+          if (status !== 'ignored') return false;
+        }
+        // 'all' shows everything
+
         if ((item.score || 0) < filters.score[0] || (item.score || 0) > filters.score[1]) return false;
         
         const r = (item.rank && item.rank > 0) ? item.rank : 999999;
@@ -104,8 +116,6 @@ export default function Home() {
            if (!match) return false;
         }
 
-        if (hideCollected && collectedIds.has(item.id)) return false;
-
         if (query) {
           const inName = (item.name || "").toLowerCase().includes(query);
           const inCn = (item.cn || "").toLowerCase().includes(query);
@@ -120,7 +130,7 @@ export default function Home() {
         switch (sortBy) {
           case "score": return (b.score || 0) - (a.score || 0);
           case "date": return (b.date || "").localeCompare(a.date || "");
-          case "collected": return (b.collection?.collect || 0) - (a.collection?.collect || 0);
+          case "collected": return (a.collection?.collect || 0) - (b.collection?.collect || 0); // Reverse for Collected? No, popularity usually means high first.
           case "rank":
           default:
             const ra = (a.rank && a.rank > 0) ? a.rank : 999999;
@@ -129,7 +139,7 @@ export default function Home() {
             return (b.score || 0) - (a.score || 0);
         }
       });
-  }, [data, filters, selectedTypes, searchText, hideCollected, collectedIds, sortBy, selectedSeason]);
+  }, [data, filters, selectedTypes, searchText, statusFilter, getStatus, sortBy, selectedSeason]);
 
   const totalPages = Math.ceil(filteredData.length / pageSize);
   const visibleData = filteredData.slice((page - 1) * pageSize, page * pageSize);
@@ -150,7 +160,7 @@ export default function Home() {
         applyFilters={applyFilters}
         selectedTypes={selectedTypes} toggleType={toggleType}
         searchText={searchText} setSearchText={setSearchText}
-        hideCollected={hideCollected} setHideCollected={setHideCollected}
+        statusFilter={statusFilter} setStatusFilter={setStatusFilter}
         selectedSeason={selectedSeason} setSelectedSeason={setSelectedSeason}
         sortBy={sortBy} setSortBy={setSortBy}
         totalCount={data.length} showingCount={filteredData.length}
@@ -170,8 +180,8 @@ export default function Home() {
                 <div key={item.id} onClick={() => setSelectedItem(item)} className="cursor-pointer">
                   <AnimeCard
                     item={item}
-                    isCollected={collectedIds.has(item.id)}
-                    onToggle={(id) => toggle(id)}
+                    status={getStatus(item.id)}
+                    onUpdateStatus={updateStatus}
                   />
                 </div>
               ))}
@@ -227,7 +237,7 @@ export default function Home() {
                     min={1} 
                     max={totalPages}
                     placeholder="#"
-                    className="w-12 bg-neutral-900 border border-neutral-800 rounded px-2 py-1.5 text-xs text-center text-white focus:outline-none focus:border-pink-500 font-mono [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="w-12 bg-neutral-900 border border-neutral-800 rounded px-2 py-1.5 text-xs text-center text-white focus:outline-none focus:border-pink-500 font-mono [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none placeholder:text-neutral-700"
                   />
                   <button type="submit" className="p-1.5 rounded bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white transition-colors">
                     <ChevronRight size={14} />
@@ -245,8 +255,8 @@ export default function Home() {
           <AnimeDetailModal
             item={selectedItem}
             onClose={() => setSelectedItem(null)}
-            isCollected={collectedIds.has(selectedItem.id)}
-            onToggle={toggle}
+            status={getStatus(selectedItem.id)}
+            onUpdateStatus={updateStatus}
           />
         )}
       </AnimatePresence>

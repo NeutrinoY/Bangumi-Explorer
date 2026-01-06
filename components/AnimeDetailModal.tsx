@@ -1,19 +1,19 @@
 "use client";
 
 import Image from "next/image";
-import { X, ExternalLink, Clapperboard, Users, Music, BookOpen, User, Eye, Heart, Clock, PauseCircle } from "lucide-react";
+import { X, ExternalLink, Clapperboard, Users, Music, BookOpen, User, Eye, Heart, Clock, PauseCircle, Check, Bookmark, Ban, Plus } from "lucide-react";
 import type { BangumiSubject } from "@/hooks/useBangumiData";
+import type { ItemStatus } from "@/hooks/useCollection";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 
 interface AnimeDetailModalProps {
   item: BangumiSubject;
   onClose: () => void;
-  isCollected: boolean;
-  onToggle: (id: number) => void;
+  status: ItemStatus;
+  onUpdateStatus: (id: number, status: ItemStatus) => void;
 }
 
-// Simple URL mapping
 const getSiteUrl = (site: string, id: string) => {
   switch (site) {
     case 'bangumi': return `https://bgm.tv/subject/${id}`;
@@ -26,18 +26,13 @@ const getSiteUrl = (site: string, id: string) => {
   }
 };
 
-export function AnimeDetailModal({ item, onClose, isCollected, onToggle }: AnimeDetailModalProps) {
+export function AnimeDetailModal({ item, onClose, status, onUpdateStatus }: AnimeDetailModalProps) {
   useEffect(() => {
-    // 1. Calculate scrollbar width
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-    
-    // 2. Lock scroll and compensate layout shift
     document.body.style.overflow = "hidden";
     if (scrollbarWidth > 0) {
       document.body.style.paddingRight = `${scrollbarWidth}px`;
     }
-
-    // 3. Cleanup
     return () => {
       document.body.style.overflow = "";
       document.body.style.paddingRight = "";
@@ -49,7 +44,6 @@ export function AnimeDetailModal({ item, onClose, isCollected, onToggle }: Anime
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
-      {/* Backdrop */}
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -59,7 +53,6 @@ export function AnimeDetailModal({ item, onClose, isCollected, onToggle }: Anime
         onClick={onClose} 
       />
       
-      {/* Content */}
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -67,14 +60,10 @@ export function AnimeDetailModal({ item, onClose, isCollected, onToggle }: Anime
         transition={{ type: "spring", damping: 25, stiffness: 300, mass: 0.5 }}
         className="relative w-full max-w-6xl max-h-[90vh] bg-neutral-900 border border-neutral-800 rounded-xl shadow-2xl overflow-hidden flex flex-col md:flex-row z-10"
       >
-        
-        {/* Close Button */}
         <button onClick={onClose} className="absolute top-4 right-4 z-20 p-2 bg-black/50 text-white rounded-full hover:bg-neutral-700 transition-colors"><X size={20} /></button>
 
-        {/* --- Left Sidebar --- */}
         <div className="w-full md:w-[300px] bg-neutral-950 p-5 flex flex-col gap-5 border-r border-neutral-800 overflow-y-auto shrink-0 custom-scrollbar">
           
-          {/* Cover */}
           <div className="relative aspect-[2/3] w-full rounded-lg overflow-hidden shadow-2xl border border-neutral-800 group bg-neutral-900">
             {item.img ? (
               <Image src={item.img.replace("http://", "https://")} alt={item.name} fill className="object-cover" unoptimized />
@@ -83,19 +72,43 @@ export function AnimeDetailModal({ item, onClose, isCollected, onToggle }: Anime
             )}
           </div>
 
-          {/* Action */}
-          <button
-            onClick={() => onToggle(item.id)}
-            className={`w-full py-3 rounded-md font-bold text-sm tracking-wide flex items-center justify-center gap-2 transition-all ${
-              isCollected
-                ? "bg-green-600 hover:bg-green-500 text-white shadow-lg shadow-green-900/20"
-                : "bg-white text-black hover:bg-neutral-200"
-            }`}
-          >
-            {isCollected ? "SAVED" : "COLLECT"}
-          </button>
+          {/* New Status Actions */}
+          <div className="flex flex-col gap-2">
+             <button
+              onClick={() => onUpdateStatus(item.id, status === 'collected' ? null : 'collected')}
+              className={`w-full py-3 rounded-md font-bold text-sm tracking-wide flex items-center justify-center gap-2 transition-all ${
+                status === 'collected'
+                  ? "bg-green-600 hover:bg-green-500 text-white shadow-lg shadow-green-900/20"
+                  : "bg-white text-black hover:bg-neutral-200"
+              }`}
+            >
+              {status === 'collected' ? <><Check size={18} /> SAVED</> : <><Plus size={18} /> COLLECT</>}
+            </button>
+            
+            <div className="grid grid-cols-2 gap-2">
+               <button
+                  onClick={() => onUpdateStatus(item.id, status === 'wishlist' ? null : 'wishlist')}
+                  className={`py-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition-all border ${
+                    status === 'wishlist'
+                      ? "bg-blue-600 border-blue-500 text-white"
+                      : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white hover:border-neutral-600"
+                  }`}
+                >
+                  <Bookmark size={14} /> Wishlist
+                </button>
+                <button
+                  onClick={() => onUpdateStatus(item.id, status === 'ignored' ? null : 'ignored')}
+                  className={`py-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition-all border ${
+                    status === 'ignored'
+                      ? "bg-red-900/50 border-red-500 text-red-200"
+                      : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white hover:border-neutral-600"
+                  }`}
+                >
+                  <Ban size={14} /> Ignore
+                </button>
+            </div>
+          </div>
 
-          {/* Stats Grid */}
           <div className="bg-neutral-900 rounded-lg p-3 border border-neutral-800">
             <h4 className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-3">Community Stats</h4>
             <div className="space-y-3">
@@ -106,7 +119,6 @@ export function AnimeDetailModal({ item, onClose, isCollected, onToggle }: Anime
             </div>
           </div>
 
-          {/* External Links */}
           {item.sites && item.sites.length > 0 && (
             <div className="space-y-2 mt-auto">
               <h4 className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Visit</h4>
@@ -131,11 +143,8 @@ export function AnimeDetailModal({ item, onClose, isCollected, onToggle }: Anime
           )}
         </div>
 
-        {/* --- Right Content --- */}
         <div className="flex-1 overflow-y-auto bg-neutral-900/50 custom-scrollbar">
           <div className="p-6 md:p-10 space-y-8">
-            
-            {/* Header */}
             <div>
               <div className="flex items-center gap-3 mb-4 flex-wrap">
                 <Badge text={item.type} color="bg-purple-500/10 text-purple-400 border-purple-500/20" />
@@ -147,16 +156,13 @@ export function AnimeDetailModal({ item, onClose, isCollected, onToggle }: Anime
               {item.cn !== item.name && <h2 className="text-lg md:text-xl text-neutral-500 font-medium">{item.name}</h2>}
             </div>
 
-            {/* Score Dashboard */}
             <div className="bg-black/20 p-6 rounded-xl border border-neutral-800/50 flex flex-col md:flex-row gap-8">
-              {/* Score Big Number */}
               <div className="flex flex-col justify-center min-w-[120px]">
                 <div className="text-5xl font-bold text-yellow-400 font-mono tracking-tighter">{item.score.toFixed(1)}</div>
                 <div className="text-xs text-neutral-500 mt-1 font-mono">{item.total.toLocaleString()} votes</div>
                 <div className="mt-4 px-3 py-1 bg-neutral-800 rounded text-xs text-neutral-300 font-mono text-center">Rank #{item.rank}</div>
               </div>
 
-              {/* Histogram */}
               <div className="flex-1 flex items-end gap-1 h-32 pb-1 border-b border-neutral-800">
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((score) => {
                   const count = chart[score.toString()] || 0;
@@ -170,7 +176,6 @@ export function AnimeDetailModal({ item, onClose, isCollected, onToggle }: Anime
                         />
                       </div>
                       <div className="text-[10px] text-neutral-600 mt-2 font-mono">{score}</div>
-                      {/* Tooltip */}
                       <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-neutral-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-neutral-700 z-10 font-mono">
                         {count}
                       </div>
@@ -180,9 +185,7 @@ export function AnimeDetailModal({ item, onClose, isCollected, onToggle }: Anime
               </div>
             </div>
 
-            {/* Layout Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              
               <div className="lg:col-span-2 space-y-6">
                 <section>
                   <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-3">Synopsis</h3>
@@ -190,7 +193,6 @@ export function AnimeDetailModal({ item, onClose, isCollected, onToggle }: Anime
                     {item.summary || "No summary available."}
                   </p>
                 </section>
-
                 <section>
                   <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-3">Tags</h3>
                   <div className="flex flex-wrap gap-2">
@@ -202,7 +204,6 @@ export function AnimeDetailModal({ item, onClose, isCollected, onToggle }: Anime
                   </div>
                 </section>
               </div>
-
               <div className="space-y-6">
                 <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Production Staff</h3>
                 <div className="space-y-4">
@@ -213,7 +214,6 @@ export function AnimeDetailModal({ item, onClose, isCollected, onToggle }: Anime
                   <StaffRow label="Music" value={item.music} icon={<Music size={14}/>} />
                 </div>
               </div>
-
             </div>
           </div>
         </div>
