@@ -9,7 +9,7 @@ import { useState, useMemo, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 
 const INITIAL_FILTERS = {
-  year: [1901, 2026] as [number, number],
+  year: [0, 2026] as [number, number],
   score: [0, 10] as [number, number],
   rank: [0, 99999] as [number, number],
   votes: [0, 999999] as [number, number],
@@ -171,28 +171,61 @@ export default function Home() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex justify-center items-center gap-4 mt-12">
-                <button
-                  disabled={page === 1}
-                  onClick={() => setPage(p => p - 1)}
-                  className="p-3 rounded-full border border-neutral-800 bg-neutral-900 text-white disabled:opacity-20 hover:border-pink-500 transition-all"
-                >
-                  <ChevronLeft size={20} />
-                </button>
+              <div className="flex flex-col sm:flex-row justify-center items-center gap-6 mt-16">
                 
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Page</span>
-                  <span className="text-lg font-mono text-white font-bold">{page}</span>
-                  <span className="text-xs font-bold text-neutral-500 uppercase tracking-widest">of {totalPages}</span>
+                <div className="flex items-center gap-4">
+                  <button
+                    disabled={page === 1}
+                    onClick={() => setPage(p => p - 1)}
+                    className="p-3 rounded-full border border-neutral-800 bg-neutral-900 text-white disabled:opacity-20 hover:border-pink-500 transition-all"
+                  >
+                    <ChevronLeft size={20} />
+                  </button>
+                  
+                  <div className="flex items-center gap-2 min-w-[100px] justify-center">
+                    <span className="text-xs font-bold text-neutral-500 uppercase tracking-widest">Page</span>
+                    <span className="text-lg font-mono text-white font-bold">{page}</span>
+                    <span className="text-xs font-bold text-neutral-500 uppercase tracking-widest">of {totalPages}</span>
+                  </div>
+
+                  <button
+                    disabled={page === totalPages}
+                    onClick={() => setPage(p => p + 1)}
+                    className="p-3 rounded-full border border-neutral-800 bg-neutral-900 text-white disabled:opacity-20 hover:border-pink-500 transition-all"
+                  >
+                    <ChevronRight size={20} />
+                  </button>
                 </div>
 
-                <button
-                  disabled={page === totalPages}
-                  onClick={() => setPage(p => p + 1)}
-                  className="p-3 rounded-full border border-neutral-800 bg-neutral-900 text-white disabled:opacity-20 hover:border-pink-500 transition-all"
+                {/* Jump to Page */}
+                <form 
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const form = e.target as HTMLFormElement;
+                    const input = form.elements.namedItem('page') as HTMLInputElement;
+                    let val = parseInt(input.value);
+                    if (isNaN(val)) return;
+                    if (val < 1) val = 1;
+                    if (val > totalPages) val = totalPages;
+                    setPage(val);
+                    input.value = '';
+                  }}
+                  className="flex items-center gap-2 pl-6 border-l border-neutral-800"
                 >
-                  <ChevronRight size={20} />
-                </button>
+                  <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Go to</span>
+                  <input 
+                    name="page"
+                    type="number" 
+                    min={1} 
+                    max={totalPages}
+                    placeholder="#"
+                    className="w-12 bg-neutral-900 border border-neutral-800 rounded px-2 py-1.5 text-xs text-center text-white focus:outline-none focus:border-pink-500 font-mono [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
+                  <button type="submit" className="p-1.5 rounded bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white transition-colors">
+                    <ChevronRight size={14} />
+                  </button>
+                </form>
+
               </div>
             )}
           </>

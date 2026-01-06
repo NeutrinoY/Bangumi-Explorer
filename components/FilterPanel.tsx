@@ -1,7 +1,8 @@
 "use client";
 
-import { Search, SlidersHorizontal, Calendar, Star, Users, Layers, Trophy, X, Snowflake, Wind, Sun, CloudRain } from "lucide-react";
-import { useState } from "react";
+import { Search, SlidersHorizontal, Calendar, Star, Users, Layers, Trophy, X, Snowflake, Wind, Sun, CloudRain, ArrowDownUp, Check, ChevronDown } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface FilterPanelProps {
   filters: {
@@ -37,142 +38,364 @@ export function FilterPanel({
   
   const [isOpen, setIsOpen] = useState(false);
   const showSeasonSelector = filters.year[0] === filters.year[1];
+  const panelRef = useRef<HTMLDivElement>(null);
 
-  const updateMin = (key: string, min: number) => {
+  // Close panel when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (panelRef.current && !panelRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    if (isOpen) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen]);
+
+  const updateMin = (key: string, val: number, limitMin: number, limitMax: number) => {
+    let v = Math.max(limitMin, Math.min(val, limitMax));
     // @ts-ignore
     const currentMax = filters[key][1];
-    setFilter(key, [min, currentMax]);
+    if (v > currentMax) v = currentMax; 
+    setFilter(key, [v, currentMax]);
   };
 
-  const updateMax = (key: string, max: number) => {
+  const updateMax = (key: string, val: number, limitMin: number, limitMax: number) => {
+    let v = Math.max(limitMin, Math.min(val, limitMax));
     // @ts-ignore
     const currentMin = filters[key][0];
-    setFilter(key, [currentMin, max]);
+    if (v < currentMin) v = currentMin; 
+    setFilter(key, [currentMin, v]);
   };
 
+  const seasonConfig = [
+    {v:1, n:"Winter", i:<Snowflake size={14}/>, activeClass: "bg-sky-500/20 text-sky-300 border-sky-500/50"},
+    {v:4, n:"Spring", i:<Wind size={14}/>,      activeClass: "bg-emerald-500/20 text-emerald-300 border-emerald-500/50"},
+    {v:7, n:"Summer", i:<Sun size={14}/>,       activeClass: "bg-orange-500/20 text-orange-300 border-orange-500/50"},
+    {v:10, n:"Fall", i:<CloudRain size={14}/>,  activeClass: "bg-amber-500/20 text-amber-300 border-amber-500/50"}
+  ];
+
   return (
-    <div className="sticky top-0 z-50 bg-neutral-950/95 backdrop-blur-md border-b border-neutral-800 shadow-xl transition-all">
-      <div className="max-w-[1920px] mx-auto px-4 sm:px-6 py-3">
+    <div ref={panelRef} className="sticky top-0 z-50 transition-all">
+      {/* Main Header Background */}
+      <div className="absolute inset-0 bg-neutral-950/80 backdrop-blur-xl border-b border-neutral-800 shadow-sm z-0"></div>
+
+      <div className="max-w-[1920px] mx-auto px-4 sm:px-6 py-4 relative z-10">
         
         {/* Top Bar */}
         <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
           <div className="flex items-center gap-6 shrink-0 w-full md:w-auto justify-between md:justify-start">
-            <div className="flex flex-col">
-              <h1 className="text-xl font-bold bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent tracking-tight">
-                BANGUMI <span className="text-white font-mono font-light">EXPLORER</span>
+            <div className="flex flex-col select-none">
+              <h1 className="text-xl font-black italic tracking-tighter text-white">
+                BANGUMI <span className="text-pink-500">DATA</span>
               </h1>
-              <div className="text-[10px] text-neutral-500 font-mono tracking-wider uppercase">
-                {showingCount.toLocaleString()} / {totalCount.toLocaleString()} ITEMS
+              <div className="text-[9px] text-neutral-500 font-mono font-bold uppercase tracking-widest flex items-center gap-2">
+                <span>Database v2.0</span>
+                <div className="w-1 h-1 bg-neutral-700 rounded-full"></div>
+                <span className={showingCount === 0 ? "text-red-500" : "text-neutral-400"}>{showingCount.toLocaleString()} Found</span>
               </div>
             </div>
-            <button onClick={() => setIsOpen(!isOpen)} className={`md:hidden p-2 rounded-lg border ${isOpen ? 'bg-pink-500 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-400'}`}>
+            
+            <button 
+              onClick={() => setIsOpen(!isOpen)} 
+              className={`md:hidden p-2.5 rounded-xl border transition-all ${isOpen ? 'bg-pink-600 text-white border-pink-500' : 'bg-neutral-900 border-neutral-800 text-neutral-400'}`}
+            >
               <SlidersHorizontal size={18} />
             </button>
           </div>
 
           {/* Search Bar */}
-          <div className="relative w-full max-w-2xl group mx-auto hidden md:block">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 group-focus-within:text-pink-500 transition-colors" size={16} />
+          <div className="relative w-full max-w-xl group hidden md:block">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <Search className="text-neutral-600 group-focus-within:text-pink-500 transition-colors" size={16} />
+            </div>
             <input
               type="text"
-              placeholder="Search title, studio, director..."
+              placeholder="Search anime title, studio, staff..."
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              className="w-full bg-neutral-900 border border-neutral-800 text-neutral-200 text-sm rounded-full pl-11 pr-4 py-2.5 focus:outline-none focus:border-pink-500/50 transition-all"
+              className="w-full bg-neutral-900/50 border border-neutral-800/80 text-neutral-200 text-sm rounded-full pl-11 pr-4 py-3 focus:outline-none focus:bg-neutral-900 focus:border-pink-500/50 transition-all shadow-inner placeholder:text-neutral-600"
             />
           </div>
 
           {/* Actions */}
-          <div className="hidden md:flex items-center gap-3">
-            <select 
-              value={sortBy} 
-              onChange={(e) => setSortBy(e.target.value)} 
-              className="bg-neutral-900 border border-neutral-800 text-neutral-400 text-xs font-bold rounded-lg px-3 py-2.5 focus:outline-none focus:border-pink-500 cursor-pointer"
-            >
-              <option value="rank">Sort: Rank</option>
-              <option value="score">Sort: Score</option>
-              <option value="date">Sort: Date</option>
-              <option value="collected">Sort: Popularity</option>
-            </select>
+          <div className="hidden md:flex items-center gap-6">
+            
+            {/* Custom Sort Select (Modernized) */}
+            <SortSelect value={sortBy} onChange={setSortBy} />
+
             <button 
               onClick={() => setIsOpen(!isOpen)} 
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-full border text-xs font-bold tracking-wide transition-all ${isOpen ? 'bg-neutral-800 text-white border-neutral-700' : 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:border-neutral-600'}`}
+              className={`flex items-center gap-2 px-5 py-2 rounded-full border text-xs font-bold tracking-wide transition-all shadow-sm ${isOpen ? 'bg-neutral-100 text-black border-white' : 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:border-neutral-600 hover:text-neutral-200'}`}
             >
-              <SlidersHorizontal size={14} /> FILTERS
+              <SlidersHorizontal size={14} strokeWidth={2.5} /> 
+              <span>FILTERS</span>
             </button>
           </div>
         </div>
 
-        {/* Expanded Controls */}
-        {isOpen && (
-          <div className="mt-6 pt-6 border-t border-neutral-800/50 animate-in slide-in-from-top-2 fade-in duration-200">
-            
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
-              <FilterInputGroup icon={<Calendar size={14}/>} label="Year" min={filters.year[0]} max={filters.year[1]} onMin={(v) => updateMin('year', v)} onMax={(v) => updateMax('year', v)} />
-              <FilterInputGroup icon={<Star size={14}/>} label="Score" min={filters.score[0]} max={filters.score[1]} step={0.1} onMin={(v) => updateMin('score', v)} onMax={(v) => updateMax('score', v)} />
-              <FilterInputGroup icon={<Trophy size={14}/>} label="Rank" min={filters.rank[0]} max={filters.rank[1]} onMin={(v) => updateMin('rank', v)} onMax={(v) => updateMax('rank', v)} />
-              <FilterInputGroup icon={<Users size={14}/>} label="Votes" min={filters.votes[0]} max={filters.votes[1]} onMin={(v) => updateMin('votes', v)} onMax={(v) => updateMax('votes', v)} />
-              <FilterInputGroup icon={<Layers size={14}/>} label="Episodes" min={filters.eps[0]} max={filters.eps[1]} onMin={(v) => updateMin('eps', v)} onMax={(v) => updateMax('eps', v)} />
-            </div>
+        {/* Mobile Search */}
+        <div className="md:hidden mt-4 relative">
+             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500" size={16} />
+             <input
+              type="text"
+              placeholder="Search..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              className="w-full bg-neutral-900 border border-neutral-800 text-neutral-200 text-sm rounded-lg pl-11 pr-4 py-2.5 focus:outline-none focus:border-pink-500"
+            />
+        </div>
+      </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-6 border-t border-neutral-800/50 pt-5">
-              <div className="flex flex-wrap items-center gap-6">
-                <div className="flex items-center gap-4">
-                  <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Format</span>
-                  <div className="flex gap-1.5">
-                    {["TV", "Movie", "OVA", "Web"].map(type => (
-                      <button key={type} onClick={() => toggleType(type)} className={`px-4 py-1.5 rounded-lg text-[11px] font-bold border transition-all ${selectedTypes.has(type) ? "bg-white text-black border-white" : "bg-neutral-900 text-neutral-500 border-neutral-800"}`}>{type}</button>
-                    ))}
-                  </div>
+      {/* Overlay Filter Content (Absolute) */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="absolute left-0 right-0 top-full border-b border-neutral-800/80 shadow-2xl z-0"
+          >
+             {/* Backdrop */}
+            <div className="absolute inset-0 bg-neutral-950/95 backdrop-blur-xl" />
+            
+            <div className="relative max-w-[1920px] mx-auto px-4 sm:px-6 py-8">
+              <div className="space-y-8">
+                
+                {/* Row 1: Range Filters */}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                  <FilterInputGroup 
+                    icon={<Calendar size={14}/>} label="Year" 
+                    min={filters.year[0]} max={filters.year[1]} 
+                    limitMin={0} limitMax={2030}
+                    onMin={(v) => updateMin('year', v, 0, 2030)} onMax={(v) => updateMax('year', v, 0, 2030)} 
+                    active={showSeasonSelector}
+                  />
+                  <FilterInputGroup icon={<Star size={14}/>} label="Score" min={filters.score[0]} max={filters.score[1]} step={0.1} limitMin={0} limitMax={10} onMin={(v) => updateMin('score', v, 0, 10)} onMax={(v) => updateMax('score', v, 0, 10)} />
+                  <FilterInputGroup icon={<Trophy size={14}/>} label="Rank" min={filters.rank[0]} max={filters.rank[1]} limitMin={0} limitMax={99999} onMin={(v) => updateMin('rank', v, 0, 99999)} onMax={(v) => updateMax('rank', v, 0, 99999)} />
+                  <FilterInputGroup icon={<Users size={14}/>} label="Votes" min={filters.votes[0]} max={filters.votes[1]} limitMin={0} limitMax={999999} onMin={(v) => updateMin('votes', v, 0, 999999)} onMax={(v) => updateMax('votes', v, 0, 999999)} />
+                  <FilterInputGroup icon={<Layers size={14}/>} label="Episodes" min={filters.eps[0]} max={filters.eps[1]} limitMin={0} limitMax={9999} onMin={(v) => updateMin('eps', v, 0, 9999)} onMax={(v) => updateMax('eps', v, 0, 9999)} />
                 </div>
 
-                {showSeasonSelector && (
-                  <div className="flex items-center gap-4 border-l border-neutral-800 pl-6">
-                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Season</span>
-                    <div className="flex gap-2">
-                      {[
-                        {v:1, n:"Winter", i:<Snowflake size={14}/>},
-                        {v:4, n:"Spring", i:<Wind size={14}/>},
-                        {v:7, n:"Summer", i:<Sun size={14}/>},
-                        {v:10, n:"Fall", i:<CloudRain size={14}/>}
-                      ].map(s => (
-                        <button key={s.v} onClick={() => setSelectedSeason(selectedSeason === s.v ? null : s.v)} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[11px] font-bold transition-all ${selectedSeason === s.v ? "bg-pink-500 text-white border-pink-400" : "bg-neutral-900 text-neutral-500 border-neutral-800 hover:border-neutral-700"}`}>{s.i} {s.n}</button>
-                      ))}
+                {/* Row 2: Advanced Options & Season */}
+                <div className="flex flex-col xl:flex-row gap-8 pt-6 border-t border-neutral-800/50">
+                  
+                  <div className="flex flex-col md:flex-row gap-8 items-start">
+                    {/* Format Selector */}
+                    <div className="flex flex-col gap-3">
+                      <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider pl-1">Format</span>
+                      <div className="flex gap-2">
+                        {["TV", "Movie", "OVA", "Web"].map(type => (
+                          <button 
+                            key={type} 
+                            onClick={() => toggleType(type)} 
+                            className={`px-4 py-1.5 rounded-lg text-[11px] font-bold transition-all border ${selectedTypes.has(type) ? "bg-pink-600 border-pink-500 text-white shadow-md shadow-pink-900/50" : "bg-neutral-900 border-neutral-800 text-neutral-500 hover:text-neutral-300 hover:border-neutral-700"}`}
+                          >
+                            {type}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
 
-              <div className="flex items-center gap-3">
-                <button 
-                  onClick={() => setHideCollected(!hideCollected)} 
-                  className={`flex items-center gap-2 px-5 py-1.5 rounded-full text-[11px] font-bold border transition-all ${hideCollected ? "bg-pink-500/10 text-pink-500 border-pink-500/50" : "bg-neutral-900 text-neutral-500 border-neutral-800"}`}
-                >
-                  {hideCollected ? <X size={12}/> : null} {hideCollected ? "Hidden Collected" : "Show All"}
-                </button>
-                <button onClick={resetAll} className="px-5 py-1.5 rounded-full text-[11px] font-bold border border-neutral-800 text-neutral-500 hover:text-white hover:border-neutral-600 transition-all">
-                  RESET
-                </button>
+                    {/* Season Selector (Unified Design) */}
+                    <AnimatePresence mode="popLayout">
+                      {showSeasonSelector && (
+                        <motion.div 
+                          initial={{ opacity: 0, x: -10, filter: 'blur(5px)' }}
+                          animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+                          exit={{ opacity: 0, scale: 0.95, filter: 'blur(5px)' }}
+                          className="flex flex-col gap-3"
+                        >
+                          <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider pl-1 flex items-center gap-2">
+                             {filters.year[0]} Season
+                          </span>
+                          <div className="grid grid-cols-4 w-full md:w-auto bg-neutral-900/50 p-1 rounded-lg border border-neutral-800 gap-1">
+                            {seasonConfig.map(s => {
+                              const isActive = selectedSeason === s.v;
+                              return (
+                                <button 
+                                  key={s.v} 
+                                  onClick={() => setSelectedSeason(isActive ? null : s.v)} 
+                                  className={`
+                                    relative flex items-center justify-center gap-2 px-4 py-1.5 rounded-md text-[11px] font-bold transition-all border
+                                    ${isActive 
+                                      ? s.activeClass 
+                                      : "border-transparent text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800"}
+                                  `}
+                                >
+                                  <span className={isActive ? "opacity-100" : "opacity-70"}>{s.i}</span>
+                                  <span className="hidden lg:inline">{s.n}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                  {/* Toggles & Reset */}
+                  <div className="xl:ml-auto flex items-end gap-3">
+                    <button 
+                      onClick={() => setHideCollected(!hideCollected)} 
+                      className={`flex items-center gap-2 px-5 py-2 rounded-lg text-[11px] font-bold border transition-all ${hideCollected ? "bg-green-900/10 text-green-400 border-green-500/30" : "bg-neutral-900/50 text-neutral-500 border-neutral-800 hover:bg-neutral-800"}`}
+                    >
+                       <div className={`w-3 h-3 rounded-full border flex items-center justify-center ${hideCollected ? "border-green-500 bg-green-500" : "border-neutral-600"}`}>
+                          {hideCollected && <Check size={8} className="text-black" strokeWidth={4} />}
+                       </div>
+                       Hide Collected
+                    </button>
+                    <button onClick={resetAll} className="px-6 py-2 rounded-lg text-[11px] font-bold border border-transparent text-neutral-500 hover:text-red-400 hover:bg-red-900/10 transition-all flex items-center gap-2">
+                      <X size={14} /> Clear Filters
+                    </button>
+                  </div>
+
+                </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
     </div>
   );
 }
 
-function FilterInputGroup({ icon, label, min, max, onMin, onMax, step = 1 }: any) {
+// --- Sub Components ---
+
+function SortSelect({ value, onChange }: { value: string, onChange: (v: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const options = [
+    { label: "Rank", value: "rank" },
+    { label: "Date", value: "date" },
+    { label: "Popularity", value: "collected" },
+  ];
+
+  const currentLabel = options.find(o => o.value === value)?.label;
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+    if (open) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [open]);
+
   return (
-    <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-3 flex flex-col gap-2 group hover:border-neutral-700 transition-all">
-      <div className="flex items-center gap-2 text-neutral-500 group-hover:text-neutral-400 transition-colors">
+    <div className="relative flex items-center gap-3 z-50" ref={ref}>
+       <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Sort By</span>
+       <div className="relative w-[140px]">
+         <button 
+           onClick={() => setOpen(!open)}
+           className={`w-full flex items-center justify-between px-3 py-2 rounded-lg border text-xs font-bold transition-all ${open ? "bg-neutral-800 text-white border-neutral-700" : "bg-neutral-900/50 border-neutral-800 text-neutral-300 hover:border-neutral-700"}`}
+         >
+            <span>{currentLabel}</span>
+            <ChevronDown size={12} className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+         </button>
+
+         <AnimatePresence>
+           {open && (
+             <motion.div
+               initial={{ opacity: 0, y: 2, scale: 0.98 }}
+               animate={{ opacity: 1, y: 0, scale: 1 }}
+               exit={{ opacity: 0, y: 2, scale: 0.98 }}
+               transition={{ duration: 0.1 }}
+               className="absolute top-full left-0 right-0 mt-1 bg-neutral-900 border border-neutral-800 rounded-lg shadow-xl overflow-hidden py-1 z-50"
+             >
+               {options.map(opt => (
+                 <button
+                   key={opt.value}
+                   onClick={() => { onChange(opt.value); setOpen(false); }}
+                   className={`w-full text-left px-3 py-2 text-xs font-bold transition-colors flex items-center justify-between ${value === opt.value ? "text-pink-500 bg-pink-500/10" : "text-neutral-400 hover:text-white hover:bg-neutral-800"}`}
+                 >
+                   {opt.label}
+                   {value === opt.value && <Check size={12} />}
+                 </button>
+               ))}
+             </motion.div>
+           )}
+         </AnimatePresence>
+       </div>
+    </div>
+  );
+}
+
+interface FilterInputGroupProps {
+  icon: React.ReactNode;
+  label: string;
+  min: number;
+  max: number;
+  limitMin: number;
+  limitMax: number;
+  onMin: (val: number) => void;
+  onMax: (val: number) => void;
+  step?: number;
+  active?: boolean;
+}
+
+function FilterInputGroup({ icon, label, min, max, limitMin, limitMax, onMin, onMax, step = 1, active = false }: FilterInputGroupProps) {
+  return (
+    <div className={`relative flex flex-col gap-2 p-3 rounded-xl border transition-all duration-300 group ${active ? "bg-pink-900/5 border-pink-500/30" : "bg-neutral-900/30 border-neutral-800 hover:border-neutral-700"}`}>
+      <div className={`flex items-center gap-2 transition-colors ${active ? "text-pink-400" : "text-neutral-500 group-hover:text-neutral-400"}`}>
         {icon} <span className="text-[10px] font-bold uppercase tracking-wider">{label}</span>
       </div>
       <div className="flex items-center gap-2">
-        <input type="number" step={step} value={min} onChange={e => onMin(Number(e.target.value))} className="w-full bg-neutral-950 border border-neutral-800 rounded px-2 py-1 text-xs text-white text-center focus:outline-none focus:border-pink-500/40" />
-        <span className="text-neutral-600">-</span>
-        <input type="number" step={step} value={max} onChange={e => onMax(Number(e.target.value))} className="w-full bg-neutral-950 border border-neutral-800 rounded px-2 py-1 text-xs text-white text-center focus:outline-none focus:border-pink-500/40" />
+        <Input 
+          val={min} 
+          onChange={onMin} 
+          step={step} 
+          min={limitMin}
+          max={limitMax}
+        />
+        <span className="text-neutral-700 font-light">/</span>
+        <Input 
+          val={max} 
+          onChange={onMax} 
+          step={step} 
+          min={limitMin}
+          max={limitMax}
+        />
       </div>
+      {active && <div className="absolute inset-0 border border-pink-500/20 rounded-xl pointer-events-none animate-pulse" />}
     </div>
+  );
+}
+
+function Input({ val, onChange, step, min, max }: { val: number, onChange: (v: number) => void, step: number, min: number, max: number }) {
+  const [localVal, setLocalVal] = useState(val.toString());
+
+  useEffect(() => {
+    // Only update local value if prop changes significantly (avoid overwriting user typing if they are slow?)
+    // Actually, we should sync always unless focused. 
+    // But simplified: Sync when prop changes.
+    setLocalVal(val.toString());
+  }, [val]);
+
+  const commit = () => {
+    let num = parseFloat(localVal);
+    if (isNaN(num)) num = min;
+    
+    // Check if changed before calling onChange to avoid re-sort
+    if (num !== val) {
+      onChange(num);
+    } else {
+      // If invalid string but same number, revert visual
+      setLocalVal(val.toString());
+    }
+  };
+
+  return (
+    <input 
+      type="number" 
+      step={step}
+      value={localVal}
+      onChange={(e) => setLocalVal(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => e.key === 'Enter' && commit()}
+      className="w-full bg-neutral-950/50 border border-neutral-800 rounded-lg px-2 py-1.5 text-xs text-white text-center focus:outline-none focus:border-pink-500/40 focus:bg-neutral-950 font-mono transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none placeholder:text-neutral-700" 
+    />
   );
 }

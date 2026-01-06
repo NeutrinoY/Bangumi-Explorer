@@ -83,7 +83,7 @@ export function AnimeDetailModal({ item, onClose, isCollected, onToggle }: Anime
           {/* External Links (Real URLs) */}
           {item.sites && item.sites.length > 0 && (
             <div className="space-y-2 mt-auto">
-              <h4 className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Watch On</h4>
+              <h4 className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">Visit</h4>
               <div className="flex flex-wrap gap-2">
                 {item.sites.map((siteObj) => {
                   const url = getSiteUrl(siteObj.site, siteObj.id);

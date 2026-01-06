@@ -17,28 +17,38 @@ body {
   overflow-y: scroll;
 }
 
-/* --- Professional Scrollbar (Webkit) --- */
+/* --- Hide Input Spin Buttons --- */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* --- Professional Scrollbar (Modern & Minimal) --- */
 ::-webkit-scrollbar {
-  width: 6px; /* 更细 */
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent; /* 透明轨道 */
+  background: #0a0a0a;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #333; /* 深灰色滑块 */
-  border-radius: 99px; /* 圆角 */
-  border: 1px solid #0a0a0a; /* 增加边框让它看起来悬浮 */
+  background-color: #2a2a2a;
+  border-radius: 4px;
+  border: 2px solid #0a0a0a; /* Creates padding effect */
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #555; /* 悬停变亮 */
+  background-color: #404040;
 }
 
-/* Firefox Support */
+/* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #333 transparent;
+  scrollbar-color: #2a2a2a #0a0a0a;
 }
