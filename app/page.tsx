@@ -13,7 +13,7 @@ import { AnimatePresence } from "framer-motion";
 import { useUrlSync } from "@/hooks/useUrlSync";
 
 const INITIAL_FILTERS = {
-  year: [0, 2030] as [number, number],
+  year: [0, 2100] as [number, number],
   score: [0, 10] as [number, number],
   rank: [0, 99999] as [number, number],
   votes: [0, 999999] as [number, number],
@@ -90,7 +90,7 @@ function BangumiExplorer() {
     if (!data.length) return [];
     const query = searchText.toLowerCase().trim();
 
-    return data
+    const result = data
       .filter((item) => {
         // 1. Status Filter
         const status = getStatus(item.id);
@@ -102,6 +102,7 @@ function BangumiExplorer() {
           if (status !== 'ignored') return false;
         }
 
+        // 2. Numeric Filters
         if ((item.score || 0) < filters.score[0] || (item.score || 0) > filters.score[1]) return false;
         
         const r = (item.rank && item.rank > 0) ? item.rank : 999999;
@@ -116,19 +117,23 @@ function BangumiExplorer() {
         const e = item.eps || 0;
         if (e < filters.eps[0] || e > filters.eps[1]) return false;
 
+        // 3. Season Filter (Only if year is locked)
         if (selectedSeason !== null && filters.year[0] === filters.year[1]) {
           const m = item.month || 0;
           if (m < selectedSeason || m > selectedSeason + 2) return false;
         }
 
-        if (selectedTypes.size > 0 && item.type) {
+        // 4. Type Filter
+        if (selectedTypes.size > 0) {
+           const tStr = item.type || ""; 
            let match = false;
            for (const t of Array.from(selectedTypes)) {
-             if (item.type.toLowerCase().includes(t.toLowerCase())) { match = true; break; }
+             if (tStr.toLowerCase().includes(t.toLowerCase())) { match = true; break; }
            }
            if (!match) return false;
         }
 
+        // 5. Search Text
         if (query) {
           const inName = (item.name || "").toLowerCase().includes(query);
           const inCn = (item.cn || "").toLowerCase().includes(query);
@@ -152,6 +157,13 @@ function BangumiExplorer() {
             return (b.score || 0) - (a.score || 0);
         }
       });
+      
+      // Debugging: Log if search yields nothing but data exists
+      if (query && result.length === 0 && data.length > 0) {
+        // console.debug(`[FilterDebug] Search for "${query}" result: 0 / ${data.length}`);
+      }
+
+      return result;
   }, [data, filters, selectedTypes, searchText, statusFilter, getStatus, sortBy, selectedSeason]);
 
   const totalPages = Math.ceil(filteredData.length / pageSize);

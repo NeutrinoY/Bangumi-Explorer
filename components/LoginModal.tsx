@@ -5,13 +5,14 @@ import { Lock, X, Loader2 } from "lucide-react";
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLogin: (email: string, pass: string) => Promise<boolean>;
+  onLogin: (email: string, pass: string) => Promise<{ success: boolean; message?: string }>;
 }
 
 export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Hidden/Auto-filled Email
   const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "";
@@ -20,6 +21,7 @@ export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
     if (isOpen) {
       setPassword("");
       setError(false);
+      setErrorMessage("");
       setLoading(false);
     }
   }, [isOpen]);
@@ -28,15 +30,17 @@ export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
     e.preventDefault();
     setLoading(true);
     setError(false);
+    setErrorMessage("");
     
     // Use the hardcoded admin email
-    const success = await onLogin(adminEmail, password);
+    const result = await onLogin(adminEmail, password);
     setLoading(false);
     
-    if (success) {
+    if (result.success) {
       onClose();
     } else {
       setError(true);
+      setErrorMessage(result.message || "Invalid credentials");
     }
   };
 
@@ -65,6 +69,11 @@ export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
               onChange={e => { setPassword(e.target.value); setError(false); }}
               className={`w-full bg-black border rounded-lg px-4 py-3 text-center text-white font-mono tracking-widest focus:outline-none transition-all ${error ? "border-red-500 text-red-500 placeholder:text-red-800" : "border-neutral-800 focus:border-pink-500"}`}
             />
+            {errorMessage && (
+              <div className="text-red-500 text-[10px] text-center font-bold tracking-wider mt-2 animate-pulse">
+                {errorMessage}
+              </div>
+            )}
           </div>
 
           <button 
