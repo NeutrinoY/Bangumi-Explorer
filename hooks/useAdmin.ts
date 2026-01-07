@@ -34,9 +34,10 @@ export function useAdmin() {
       password: pass,
     });
     if (error) {
-      return { success: false, message: error.message };
+      console.error("Login failed:", error.message);
+      return false;
     }
-    return { success: true };
+    return true;
   };
 
   const logout = async () => {
