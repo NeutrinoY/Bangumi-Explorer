@@ -222,7 +222,7 @@ export function FilterPanel({
           <div className="flex items-center gap-6 shrink-0 w-full md:w-auto justify-between md:justify-start">
             <div className="flex flex-col select-none">
               <h1 className="text-xl font-black italic tracking-tighter text-white">
-                BANGUMI <span className="text-pink-500">DATA</span>
+                BANGUMI <span className="text-pink-500">EXPLORER</span>
               </h1>
               <div className="text-[9px] text-neutral-500 font-mono font-bold uppercase tracking-widest flex items-center gap-2">
                 <span>Database v2.0</span>
