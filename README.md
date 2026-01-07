@@ -1,74 +1,80 @@
 # Bangumi Explorer
 
-> [**简体中文**](./README_CN.md) | English
+> A minimalist, modern anime discovery and collection manager.
 
-> A bespoke, minimalist anime collection manager built for the obsessed collector.
-
-![Project Preview](./web-ui/public/icon.png)
-
-## 📖 The Story
-
-I have a habit—some might call it an obsession—of collecting anime.
-
-Over the years, my local **Emby** server has grown to house over **1,000 titles**, covering almost every mainstream classic you can name. But as the collection grew, so did the anxiety of "what am I missing?". There are countless niche gems and forgotten masterpieces buried in the depths of Bangumi.tv that I hadn't archived yet.
-
-**The Pain Point:**
-Previously, my workflow was raw and industrial. I used Python scripts to scrape data, dumping JSONs into **Excel** spreadsheets to cross-reference with my local files. It worked, but it was ugly. Staring at endless rows of dry text cells killed the joy of discovery. Excel's filtering was powerful but clunky, and it lacked the visual connection to the artwork.
-
-**The Solution:**
-I decided to build a dedicated tool to bridge the gap. **Bangumi Explorer** is my answer to the question: *"What should I collect next?"*
-
-It replaces the cold spreadsheets with a fluid, visual interface designed for high-efficiency curation. It's not just about data; it's about the experience of browsing anime history.
+![Project Preview](./public/icon.png)
+*(Recommended: Add a high-res screenshot of the "Masonry Layout" or "Detail View" here later)*
 
 ---
 
-## ✨ Philosophy & Features
+## 📖 Background: From Excel to Explorer
 
-The core goal of this project is **"Gap Analysis"**—identifying what I have versus what exists, in the most elegant way possible.
+As a dedicated anime collector, my local **Emby** library houses over **1,000 titles**. As the collection grew, maintaining this massive library became a challenge—not just managing what I *had*, but identifying what I was *missing*.
 
-### 1. Visual Curation over Spreadsheets
-Instead of text rows, data is presented as rich, visual cards.
-- **Green Badge**: Represents "Collected" (Synced with my Emby library).
-- **Gray/Red**: Represents "Ignored" or "Todo".
-This visual language makes it instantly obvious which eras or genres in my collection have holes that need filling.
+My early workflow was primitive: Python scripts processing scraped Bangumi data, dumped into Excel after cleaning. While Excel's filtering is powerful, staring at thousands of rows of cold text offered no joy in browsing the art form. Furthermore, manually cross-referencing local inventory with online databases was a tedious, soul-crushing process.
 
-### 2. Multi-Dimensional Filtering (The "Lens")
-I designed a filtering system that goes beyond simple search. It features **Smart Presets** based on my personal collecting logic:
-- **💎 Modern Gems**: High-rated, non-mainstream works from the last decade.
-- **⏳ Retro Classics**: Golden age anime (pre-2005) that define the medium.
-- **🔥 Modern Hits**: The popular blockbusters.
-- **🎬 Movie Hits**: Feature-length masterpieces.
+**Bangumi Explorer** was born from this need. I wanted to make the process elegant, intuitive, and efficient. It is not just a database; it is a private **"Curator's Gallery"** for anime.
 
-These presets allow me to slice through thousands of entries instantly to find "High scoring, low vote count" hidden gems or "High popularity" essentials I somehow missed.
+---
 
-### 3. Dual-Mode Persistence (Supabase)
-- **Guest Mode (Public)**: Visitors can explore the database and see my collection status (Read-Only).
-- **Admin Mode (Private)**: A secure, password-protected mode where I can mark titles as `Collected`, `Wishlist`, or `Ignored`.
-- **Cloud Native**: Data is stored in **Supabase**, ensuring my curation efforts are permanent and accessible from any device, anywhere. No more "local file lost" anxiety.
+## ✨ Core Features
 
-### 4. Frictionless Detail Access
-A streamlined detail view provides key metrics (Score, Rank, Votes, EPS, Date) at a glance, with direct deep-links to the source Bangumi page. The flow from *Discovery* -> *Analysis* -> *Source Check* is now seamless.
+### 1. A Modern Bangumi Experience (For Guests)
+Even without the collection features, this project serves as a **blazing fast, third-party frontend for Bangumi**.
+*   **Instant Interaction**: Built on Next.js, leveraging localized indexing for near-zero latency search and filtering—far faster than traditional page loads.
+*   **Visual-First**: Immersive dark mode and card-based design focus on posters and key metrics (Score, Rank, Year), eliminating redundant noise.
+*   **Responsive**: Meticulously designed layout that delivers a silky-smooth experience on everything from 4K desktop monitors to mobile screens.
+
+### 2. Visual Gap Analysis
+This project transforms dry data comparison into a visual language. Through color-coded badges, I can instantly scan a specific year or genre and spot the "holes" in my collection map, allowing for rapid gap analysis.
+*   **Status Badges**:
+    *   🟢 **Collected**: Synced with Emby/Local library.
+    *   🔵 **Wishlist**: Potential targets for future acquisition.
+    *   🔴 **Ignored**: Confirmed as not interested.
+    *   ⚪ **Todo**: Unassessed entries.
+
+### 3. Multi-Dimensional Lens
+To satisfy diverse curation needs, I implemented an advanced filtering system beyond simple search, featuring **6 Logic Presets** and **Fine-grained Controls**:
+
+*   **⚡ Smart Presets**:
+    *   **🔥 Modern Hits / 🎬 Movie Hits**: Quickly locate high-popularity blockbusters.
+    *   **💎 Modern Gems / 🎬 Movie Gems**: Filter for "High Score, Low Vote Count" titles—unearthing hidden masterpieces.
+    *   **⏳ Retro Classics / ⚡ Retro Cult**: One-click focus on Golden Age (pre-2005) standards and cult classics.
+*   **📏 Scope Control**:
+    *   **Max 52 Eps**: Filter out long-running franchises to focus on concise narratives.
+    *   **> 1 Ep**: Filter out single-episode OVAs/Movies to focus on series.
+*   **📅 Seasonal Index**: When a specific year (e.g., 2025) is locked, a **Seasonal Selector** (Winter/Spring/Summer/Fall) automatically appears for precise quarterly tracking.
+
+### 4. Backend Architecture
+*   **Supabase Backend**: Uses Supabase (PostgreSQL) to store collection status, enforced by RLS (Row Level Security) policies.
+*   **Dual Access**:
+    *   **Guest Mode**: Publicly readable, sharing my personal taste and collection list.
+    *   **Admin Mode**: Password-protected write access to ensure data integrity.
+
+---
+
+## 🔄 Data Pipeline & ETL
+
+The data foundation of this project is derived from the open-source project [Jinrxin/bangumi-data](https://github.com/Jinrxin/bangumi-data). Special thanks to the author for the crawler work that provides the comprehensive Bangumi dataset.
+
+**Automation Roadmap:**
+Currently, the system uses static JSON data. I plan to introduce **GitHub Actions** for automation:
+
+1.  Monitor the upstream repository for data updates.
+2.  Trigger the internal `merge.cjs` script for ETL (Extract, Transform, Load) processing.
+3.  Auto-build and deploy the latest `db.json` to the frontend.
+This will ensure the data remains "fresh" without manual maintenance of the base database.
 
 ---
 
 ## 🛠️ Tech Stack
 
-This project is built with a focus on performance and visual smoothness.
+Built on the latest generation of the Web ecosystem, pursuing extreme performance and developer experience.
 
-- **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/) (Minimalist, Dark Mode)
-- **Database & Auth**: [Supabase](https://supabase.com/) (PostgreSQL + RLS)
-- **Motion**: [Framer Motion](https://www.framer.com/motion/) (Fluid interactions)
-- **Icons**: [Lucide React](https://lucide.dev/)
-
----
-
-## 🚀 Future Roadmap
-
-Currently, the status marking is manual—and I actually prefer it that way. It forces me to consciously review each title.
-
-- **Automated Sync**: In the future, I might implement a script to auto-scan my Emby library and sync the status to Supabase via fuzzy matching. But for now, the manual "gardening" of the collection is part of the fun.
-- **More Analytics**: Visualizing the distribution of my collection by year or genre.
+*   **Frontend**: [Next.js 16](https://nextjs.org/) (App Router), [React](https://react.dev/), [TypeScript](https://www.typescriptlang.org/)
+*   **Styling**: [Tailwind CSS](https://tailwindcss.com/), [Framer Motion](https://www.framer.com/motion/)
+*   **Backend / Auth**: [Supabase](https://supabase.com/)
+*   **Icons**: [Lucide React](https://lucide.dev/)
 
 ---
 
