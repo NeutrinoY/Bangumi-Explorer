@@ -1,9 +1,29 @@
-# Bangumi Explorer
+<div align="center">
+  <img src="docs/images/logo.png" width="120" alt="Bangumi Explorer Logo">
+  <h1>Bangumi Explorer</h1>
+  <p><strong>A minimalist, modern anime discovery and collection manager.</strong></p>
 
-> A minimalist, modern anime discovery and collection manager.
+  <p>
+    <a href="https://bangumi-explorer.neutrinoy.xyz">
+      <img src="https://img.shields.io/badge/Live%20Demo-bangumi--explorer.neutrinoy.xyz-blue?style=for-the-badge&logo=vercel" alt="Live Demo">
+    </a>
+    <a href="https://github.com/NeutrinoY/Bangumi-Explorer/actions">
+      <img src="https://img.shields.io/github/actions/workflow/status/NeutrinoY/Bangumi-Explorer/update-db.yml?style=for-the-badge&label=Data%20Sync" alt="Data Sync Status">
+    </a>
+  </p>
 
-![Project Preview](./public/icon.png)
-*(Recommended: Add a high-res screenshot of the "Masonry Layout" or "Detail View" here later)*
+  <p>
+    <b>English</b> | <a href="./README_CN.md">中文说明</a>
+  </p>
+</div>
+
+<br/>
+
+<div align="center">
+  <img src="docs/images/preview-1.webp" width="32%" alt="Home Page - Masonry Layout">
+  <img src="docs/images/preview-2.webp" width="32%" alt="Advanced Filtering System">
+  <img src="docs/images/preview-3.webp" width="32%" alt="Immersive Detail View">
+</div>
 
 ---
 
@@ -14,6 +34,8 @@ As a dedicated anime collector, my local **Emby** library houses over **1,000 ti
 My early workflow was primitive: Python scripts processing scraped Bangumi data, dumped into Excel after cleaning. While Excel's filtering is powerful, staring at thousands of rows of cold text offered no joy in browsing the art form. Furthermore, manually cross-referencing local inventory with online databases was a tedious, soul-crushing process.
 
 **Bangumi Explorer** was born from this need. I wanted to make the process elegant, intuitive, and efficient. It is not just a database; it is a private **"Curator's Gallery"** for anime.
+
+Visit the live site: [bangumi-explorer.neutrinoy.xyz](https://bangumi-explorer.neutrinoy.xyz)
 
 ---
 
@@ -53,17 +75,17 @@ To satisfy diverse curation needs, I implemented an advanced filtering system be
 
 ---
 
-## 🔄 Data Pipeline & ETL
+## 🔄 Data Pipeline & ETL (Automated)
 
 The data foundation of this project is derived from the open-source project [Jinrxin/bangumi-data](https://github.com/Jinrxin/bangumi-data). Special thanks to the author for the crawler work that provides the comprehensive Bangumi dataset.
 
-**Automation Roadmap:**
-Currently, the system uses static JSON data. I plan to introduce **GitHub Actions** for automation:
+**Fully Automated via GitHub Actions:**
+The system is now completely self-sustaining:
+1.  **Daily Sync**: Automatically checks the upstream repository for updates every day (UTC 0:00).
+2.  **Internal ETL**: Triggers the `merge.cjs` script to Extract, Transform, and Load the raw data.
+3.  **Auto Deploy**: Commits the fresh `db.json` to the repo, triggering a Vercel rebuild automatically.
 
-1.  Monitor the upstream repository for data updates.
-2.  Trigger the internal `merge.cjs` script for ETL (Extract, Transform, Load) processing.
-3.  Auto-build and deploy the latest `db.json` to the frontend.
-This will ensure the data remains "fresh" without manual maintenance of the base database.
+Data remains "fresh" without any manual intervention.
 
 ---
 
