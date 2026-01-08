@@ -11,7 +11,7 @@ interface AnimeDetailModalProps {
   item: BangumiSubject;
   onClose: () => void;
   status: ItemStatus | null;
-  onUpdateStatus: (id: number, status: ItemStatus) => void;
+  onUpdateStatus: (id: number, status: ItemStatus | null) => void;
   isAdmin: boolean;
 }
 
