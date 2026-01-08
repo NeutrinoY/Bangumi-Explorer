@@ -7,7 +7,7 @@ import type { ItemStatus } from "@/hooks/useCollection";
 
 interface AnimeCardProps {
   item: BangumiSubject;
-  status: ItemStatus; // 'collected' | 'wishlist' | 'ignored' | null
+  status: ItemStatus | null;
   onUpdateStatus: (id: number, status: ItemStatus) => void;
   isAdmin: boolean;
   priority?: boolean;
