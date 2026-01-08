@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 interface AnimeDetailModalProps {
   item: BangumiSubject;
   onClose: () => void;
-  status: ItemStatus;
+  status: ItemStatus | null;
   onUpdateStatus: (id: number, status: ItemStatus) => void;
   isAdmin: boolean;
 }
