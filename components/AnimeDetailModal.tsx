@@ -176,7 +176,6 @@ export function AnimeDetailModal({ item, onClose, status, onUpdateStatus, isAdmi
         {/* Right Content */}
         <div 
           className="flex-1 overflow-y-auto bg-neutral-900/50 custom-scrollbar"
-          style={{ scrollbarGutter: "stable" }} 
         >
           <div className="p-6 md:p-10 space-y-8 pb-24 md:pb-10">
             <div className="hidden md:block">
