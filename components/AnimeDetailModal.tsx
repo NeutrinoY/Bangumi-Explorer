@@ -44,7 +44,7 @@ export function AnimeDetailModal({ item, onClose, status, onUpdateStatus, isAdmi
   const maxVote = Math.max(...Object.values(chart).map(Number), 1);
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center md:p-6">
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -59,13 +59,14 @@ export function AnimeDetailModal({ item, onClose, status, onUpdateStatus, isAdmi
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
         transition={{ type: "spring", damping: 25, stiffness: 300, mass: 0.5 }}
-        className="relative w-full max-w-6xl max-h-[90vh] bg-neutral-900 border border-neutral-800 rounded-xl shadow-2xl overflow-hidden flex flex-col md:flex-row z-10"
+        className="relative w-full md:max-w-6xl h-full md:h-auto md:max-h-[90vh] bg-neutral-900 border-0 md:border border-neutral-800 md:rounded-xl shadow-2xl overflow-hidden flex flex-col md:flex-row z-10"
       >
-        <button onClick={onClose} className="absolute top-4 right-4 z-20 p-2 bg-black/50 text-white rounded-full hover:bg-neutral-700 transition-colors"><X size={20} /></button>
+        <button onClick={onClose} className="absolute top-4 right-4 z-20 p-2 bg-black/50 text-white rounded-full hover:bg-neutral-700 transition-colors backdrop-blur-md"><X size={20} /></button>
 
-        <div className="w-full md:w-[300px] bg-neutral-950 p-5 flex flex-col gap-5 border-r border-neutral-800 overflow-y-auto shrink-0 custom-scrollbar">
+        {/* Sidebar (Image & Actions) */}
+        <div className="w-full md:w-[300px] bg-neutral-950 p-5 flex flex-col gap-5 border-b md:border-b-0 md:border-r border-neutral-800 overflow-y-auto shrink-0 custom-scrollbar">
           
-          <div className="relative w-full rounded-lg overflow-hidden shadow-2xl border border-neutral-800 group bg-neutral-900">
+          <div className="relative w-[180px] mx-auto md:w-full rounded-lg overflow-hidden shadow-2xl border border-neutral-800 group bg-neutral-900 shrink-0">
             {item.img ? (
               <Image 
                 src={item.img.replace("http://", "https://")} 
@@ -78,6 +79,12 @@ export function AnimeDetailModal({ item, onClose, status, onUpdateStatus, isAdmi
             ) : (
               <div className="flex aspect-[2/3] items-center justify-center text-neutral-800">No Image</div>
             )}
+          </div>
+
+          {/* Title on Mobile (Shown here for better hierarchy if image is small) */}
+          <div className="md:hidden text-center">
+             <h1 className="text-xl font-bold text-white leading-tight">{item.cn || item.name}</h1>
+             <div className="text-2xl font-bold text-yellow-400 font-mono mt-2">{item.score.toFixed(1)}</div>
           </div>
 
           {/* ADMIN ONLY: Status Actions */}
@@ -166,9 +173,13 @@ export function AnimeDetailModal({ item, onClose, status, onUpdateStatus, isAdmi
           )}
         </div>
 
-        <div className="flex-1 overflow-y-auto bg-neutral-900/50 custom-scrollbar">
-          <div className="p-6 md:p-10 space-y-8">
-            <div>
+        {/* Right Content */}
+        <div 
+          className="flex-1 overflow-y-auto bg-neutral-900/50 custom-scrollbar"
+          style={{ scrollbarGutter: "stable" }} 
+        >
+          <div className="p-6 md:p-10 space-y-8 pb-24 md:pb-10">
+            <div className="hidden md:block">
               <div className="flex items-center gap-3 mb-4 flex-wrap">
                 <Badge text={item.type} color="bg-purple-500/10 text-purple-400 border-purple-500/20" />
                 <Badge text={`${item.year}`} color="bg-neutral-800 text-neutral-400" />
@@ -179,14 +190,18 @@ export function AnimeDetailModal({ item, onClose, status, onUpdateStatus, isAdmi
               {item.cn !== item.name && <h2 className="text-lg md:text-xl text-neutral-500 font-medium">{item.name}</h2>}
             </div>
 
-            <div className="bg-black/20 p-6 rounded-xl border border-neutral-800/50 flex flex-col md:flex-row gap-8">
-              <div className="flex flex-col justify-center min-w-[120px]">
-                <div className="text-5xl font-bold text-yellow-400 font-mono tracking-tighter">{item.score.toFixed(1)}</div>
-                <div className="text-xs text-neutral-500 mt-1 font-mono">{item.total.toLocaleString()} votes</div>
-                <div className="mt-4 px-3 py-1 bg-neutral-800 rounded text-xs text-neutral-300 font-mono text-center">Rank #{item.rank}</div>
+            <div className="bg-black/20 p-4 md:p-6 rounded-xl border border-neutral-800/50 flex flex-col md:flex-row gap-8">
+              {/* Score Info: Mobile (Row) / Desktop (Col) */}
+              <div className="flex flex-row md:flex-col items-center md:items-start justify-between md:justify-center min-w-[120px] w-full md:w-auto gap-4">
+                <div className="flex flex-col items-center md:items-start">
+                   <div className="text-4xl md:text-5xl font-bold text-yellow-400 font-mono tracking-tighter">{item.score.toFixed(1)}</div>
+                   <div className="text-[10px] md:text-xs text-neutral-500 mt-1 font-mono">{item.total.toLocaleString()} votes</div>
+                </div>
+                <div className="mt-0 md:mt-4 px-3 py-1 bg-neutral-800 rounded text-xs text-neutral-300 font-mono text-center border border-neutral-700">Rank #{item.rank}</div>
               </div>
 
-              <div className="flex-1 flex items-end gap-1 h-32 pb-1 border-b border-neutral-800">
+              {/* Chart: Hidden on Mobile */}
+              <div className="hidden md:flex flex-1 items-end gap-1 h-32 pb-1 border-b border-neutral-800">
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((score) => {
                   const count = chart[score.toString()] || 0;
                   const height = maxVote > 0 ? (count / maxVote) * 100 : 0;
@@ -212,7 +227,7 @@ export function AnimeDetailModal({ item, onClose, status, onUpdateStatus, isAdmi
               <div className="lg:col-span-2 space-y-6">
                 <section>
                   <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-3">Synopsis</h3>
-                  <p className="text-neutral-300 text-sm leading-7 whitespace-pre-line">
+                  <p className="text-neutral-300 text-sm leading-7 whitespace-pre-line text-justify">
                     {item.summary || "No summary available."}
                   </p>
                 </section>
@@ -220,7 +235,7 @@ export function AnimeDetailModal({ item, onClose, status, onUpdateStatus, isAdmi
                   <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-3">Tags</h3>
                   <div className="flex flex-wrap gap-2">
                     {item.tags.map(tag => (
-                      <span key={tag} className="px-2.5 py-1 bg-neutral-800 border border-neutral-700/50 rounded text-xs text-neutral-400 cursor-default">
+                      <span key={tag} className="px-2.5 py-1 bg-neutral-800 border border-neutral-700/50 rounded text-xs text-neutral-400 cursor-default hover:text-white transition-colors">
                         {tag}
                       </span>
                     ))}
@@ -229,7 +244,7 @@ export function AnimeDetailModal({ item, onClose, status, onUpdateStatus, isAdmi
               </div>
               <div className="space-y-6">
                 <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Production Staff</h3>
-                <div className="space-y-4">
+                <div className="grid grid-cols-2 md:grid-cols-1 gap-4 md:gap-0 md:space-y-4">
                   <StaffRow label="Director" value={item.director} icon={<Users size={14}/>} />
                   <StaffRow label="Script" value={item.writer} icon={<BookOpen size={14}/>} />
                   <StaffRow label="Original" value={item.original} icon={<Clapperboard size={14}/>} />

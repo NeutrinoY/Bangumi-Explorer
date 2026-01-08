@@ -281,153 +281,169 @@ export function FilterPanel({
         </div>
       </div>
 
-      {/* Overlay Filter Content (Absolute) */}
+      {/* Overlay Filter Content */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -8 }}
+            initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-            className="absolute left-0 right-0 top-full border-b border-neutral-800/80 shadow-2xl z-0"
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 md:absolute md:inset-auto md:left-0 md:right-0 md:top-full md:z-0 md:border-b md:border-neutral-800/80 md:shadow-2xl"
           >
              {/* Backdrop */}
-            <div className="absolute inset-0 bg-neutral-950/95 backdrop-blur-xl" />
+            <div className="absolute inset-0 bg-neutral-950 md:bg-neutral-950/95 md:backdrop-blur-xl" />
             
-            <div className="relative max-w-[1920px] mx-auto px-4 sm:px-6 py-6">
-              <div className="space-y-6">
-
-                {/* --- Quick Presets Area --- */}
-                <div className="flex flex-col xl:flex-row items-center justify-between gap-4 pb-4 border-b border-neutral-800/50">
-                   <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-                      <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider py-1.5 mr-2">Presets</span>
-                      {PRESETS.map(preset => {
-                        const active = isPresetActive(preset);
-                        return (
-                          <button
-                            key={preset.id}
-                            onClick={() => handlePresetClick(preset)}
-                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[11px] font-bold transition-all ${active ? preset.activeColor : `bg-neutral-900/50 border-neutral-800 ${preset.color}`}`}
-                          >
-                            {preset.icon}
-                            <span>{preset.label}</span>
-                          </button>
-                        );
-                      })}
-                   </div>
-
-                   <div className={`flex items-center gap-2 transition-opacity duration-300 ${isMovieSelected ? "opacity-30 pointer-events-none" : "opacity-100"}`}>
-                     <button 
-                       onClick={toggleShortSeries}
-                       disabled={isMovieSelected}
-                       className={`flex items-center gap-2 px-4 py-1.5 rounded-lg border text-[11px] font-bold transition-all ${useShortSeries ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/50" : "bg-neutral-900/50 border-neutral-800 text-neutral-500 hover:border-neutral-700"}`}
-                     >
-                       <Zap size={12} className={useShortSeries ? "text-indigo-400" : "text-neutral-600"} />
-                       Max 52 Eps
-                     </button>
-                     <button 
-                       onClick={toggleSeriesOnly}
-                       disabled={isMovieSelected}
-                       className={`flex items-center gap-2 px-4 py-1.5 rounded-lg border text-[11px] font-bold transition-all ${useSeriesOnly ? "bg-teal-500/20 text-teal-300 border-teal-500/50" : "bg-neutral-900/50 border-neutral-800 text-neutral-500 hover:border-neutral-700"}`}
-                     >
-                       <Layers size={12} className={useSeriesOnly ? "text-teal-400" : "text-neutral-600"} />
-                       {'>'} 1 Ep
-                     </button>
-                   </div>
-                </div>
+            {/* Scroll Container */}
+            <div className="relative h-full overflow-y-auto md:h-auto md:overflow-visible custom-scrollbar">
+              <div className="relative max-w-[1920px] mx-auto px-4 sm:px-6 py-6 min-h-full md:min-h-0">
                 
-                {/* Row 1: Range Filters */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-                  <FilterInputGroup 
-                    icon={<Calendar size={14}/>} label="Year" 
-                    min={filters.year[0]} max={filters.year[1]} 
-                    limitMin={0} limitMax={2030}
-                    onMin={(v) => updateMin('year', v, 0, 2030)} onMax={(v) => updateMax('year', v, 0, 2030)} 
-                    active={showSeasonSelector}
-                  />
-                  <FilterInputGroup icon={<Star size={14}/>} label="Score" min={filters.score[0]} max={filters.score[1]} step={0.1} limitMin={0} limitMax={10} onMin={(v) => updateMin('score', v, 0, 10)} onMax={(v) => updateMax('score', v, 0, 10)} />
-                  <FilterInputGroup icon={<Trophy size={14}/>} label="Rank" min={filters.rank[0]} max={filters.rank[1]} limitMin={0} limitMax={99999} onMin={(v) => updateMin('rank', v, 0, 99999)} onMax={(v) => updateMax('rank', v, 0, 99999)} />
-                  <FilterInputGroup icon={<Users size={14}/>} label="Votes" min={filters.votes[0]} max={filters.votes[1]} limitMin={0} limitMax={999999} onMin={(v) => updateMin('votes', v, 0, 999999)} onMax={(v) => updateMax('votes', v, 0, 999999)} />
-                  <FilterInputGroup icon={<Layers size={14}/>} label="Episodes" min={filters.eps[0]} max={filters.eps[1]} limitMin={0} limitMax={9999} onMin={(v) => updateMin('eps', v, 0, 9999)} onMax={(v) => updateMax('eps', v, 0, 9999)} />
+                {/* Mobile Header */}
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-neutral-800 md:hidden">
+                    <span className="text-lg font-bold text-white flex items-center gap-2">
+                        <SlidersHorizontal size={18} className="text-pink-500"/> Filters
+                    </span>
+                    <button onClick={() => setIsOpen(false)} className="p-2 bg-neutral-900 rounded-full text-neutral-400 hover:text-white">
+                        <X size={20} />
+                    </button>
                 </div>
 
-                {/* Row 2: Advanced Options & Season */}
-                <div className="flex flex-col xl:flex-row gap-8 pt-4 border-t border-neutral-800/50">
-                  
-                  <div className="flex flex-col md:flex-row gap-8 items-start">
-                    <div className="flex flex-col gap-3">
-                      <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider pl-1">Format</span>
-                      <div className="flex gap-2">
-                        {["TV", "Movie", "OVA", "Web"].map(type => (
-                          <button 
-                            key={type} 
-                            onClick={() => toggleType(type)} 
-                            className={`px-4 py-1.5 rounded-lg text-[11px] font-bold transition-all border ${selectedTypes.has(type) ? "bg-pink-600 border-pink-500 text-white shadow-md shadow-pink-900/50" : "bg-neutral-900 border-neutral-800 text-neutral-500 hover:text-neutral-300 hover:border-neutral-700"}`}
-                          >
-                            {type}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                <div className="space-y-6 pb-20 md:pb-0">
 
-                    <AnimatePresence mode="popLayout">
-                      {showSeasonSelector && (
-                        <motion.div 
-                          initial={{ opacity: 0, x: -10, filter: 'blur(5px)' }}
-                          animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-                          exit={{ opacity: 0, scale: 0.95, filter: 'blur(5px)' }}
-                          className="flex flex-col gap-3"
-                        >
-                          <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider pl-1 flex items-center gap-2">
-                             {filters.year[0]} Season
-                          </span>
-                          <div className="grid grid-cols-4 w-full md:w-auto bg-neutral-900/50 p-1 rounded-lg border border-neutral-800 gap-1">
-                            {seasonConfig.map(s => {
-                              const isActive = selectedSeason === s.v;
-                              return (
-                                <button 
-                                  key={s.v} 
-                                  onClick={() => setSelectedSeason(isActive ? null : s.v)} 
-                                  className={`
-                                    relative flex items-center justify-center gap-2 px-4 py-1.5 rounded-md text-[11px] font-bold transition-all border
-                                    ${isActive 
-                                      ? s.activeClass 
-                                      : "border-transparent text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800"}
-                                  `}
-                                >
-                                  <span className={isActive ? "opacity-100" : "opacity-70"}>{s.i}</span>
-                                  <span className="hidden lg:inline">{s.n}</span>
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-
-                  {/* Toggles & Reset */}
-                  <div className="xl:ml-auto flex items-end gap-3">
-                     {/* Status Filter Tabs */}
-                     <div className="flex bg-neutral-900 rounded-lg p-1 border border-neutral-800">
-                        {statusOptions.map(opt => (
-                          <button
-                            key={opt.id}
-                            onClick={() => setStatusFilter(opt.id as StatusFilterType)}
-                            className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all border ${
-                              statusFilter === opt.id ? opt.activeClass : "border-transparent text-neutral-500 hover:text-neutral-300"
-                            }`}
-                          >
-                            {opt.icon} <span className="hidden md:inline">{opt.label}</span>
-                          </button>
-                        ))}
+                  {/* --- Quick Presets Area --- */}
+                  <div className="flex flex-col xl:flex-row items-center justify-between gap-4 pb-4 border-b border-neutral-800/50">
+                     <div className="grid grid-cols-2 gap-2 w-full md:w-auto md:flex md:flex-wrap md:justify-start">
+                        <div className="col-span-2 md:w-auto flex justify-center md:justify-start">
+                           <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider py-1.5 mr-2">Presets</span>
+                        </div>
+                        {PRESETS.map(preset => {
+                          const active = isPresetActive(preset);
+                          return (
+                            <button
+                              key={preset.id}
+                              onClick={() => handlePresetClick(preset)}
+                              className={`flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg border text-[11px] font-bold transition-all ${active ? preset.activeColor : `bg-neutral-900/50 border-neutral-800 ${preset.color}`}`}
+                            >
+                              {preset.icon}
+                              <span>{preset.label}</span>
+                            </button>
+                          );
+                        })}
                      </div>
 
-                    <button onClick={resetAll} className="px-6 py-2 rounded-lg text-[11px] font-bold border border-transparent text-neutral-500 hover:text-red-400 hover:bg-red-900/10 transition-all flex items-center gap-2">
-                      <X size={14} /> Clear Filters
-                    </button>
+                     <div className={`grid grid-cols-2 gap-2 w-full md:w-auto md:flex md:items-center transition-opacity duration-300 ${isMovieSelected ? "opacity-30 pointer-events-none" : "opacity-100"}`}>
+                       <button 
+                         onClick={toggleShortSeries}
+                         disabled={isMovieSelected}
+                         className={`flex items-center justify-center gap-2 px-4 py-1.5 rounded-lg border text-[11px] font-bold transition-all ${useShortSeries ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/50" : "bg-neutral-900/50 border-neutral-800 text-neutral-500 hover:border-neutral-700"}`}
+                       >
+                         <Zap size={12} className={useShortSeries ? "text-indigo-400" : "text-neutral-600"} />
+                         Max 52 Eps
+                       </button>
+                       <button 
+                         onClick={toggleSeriesOnly}
+                         disabled={isMovieSelected}
+                         className={`flex items-center justify-center gap-2 px-4 py-1.5 rounded-lg border text-[11px] font-bold transition-all ${useSeriesOnly ? "bg-teal-500/20 text-teal-300 border-teal-500/50" : "bg-neutral-900/50 border-neutral-800 text-neutral-500 hover:border-neutral-700"}`}
+                       >
+                         <Layers size={12} className={useSeriesOnly ? "text-teal-400" : "text-neutral-600"} />
+                         {'>'} 1 Ep
+                       </button>
+                     </div>
+                  </div>
+                  
+                  {/* Row 1: Range Filters */}
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                    <FilterInputGroup 
+                      icon={<Calendar size={14}/>} label="Year" 
+                      min={filters.year[0]} max={filters.year[1]} 
+                      limitMin={0} limitMax={2030}
+                      onMin={(v) => updateMin('year', v, 0, 2030)} onMax={(v) => updateMax('year', v, 0, 2030)} 
+                      active={showSeasonSelector}
+                    />
+                    <FilterInputGroup icon={<Star size={14}/>} label="Score" min={filters.score[0]} max={filters.score[1]} step={0.1} limitMin={0} limitMax={10} onMin={(v) => updateMin('score', v, 0, 10)} onMax={(v) => updateMax('score', v, 0, 10)} />
+                    <FilterInputGroup icon={<Trophy size={14}/>} label="Rank" min={filters.rank[0]} max={filters.rank[1]} limitMin={0} limitMax={99999} onMin={(v) => updateMin('rank', v, 0, 99999)} onMax={(v) => updateMax('rank', v, 0, 99999)} />
+                    <FilterInputGroup icon={<Users size={14}/>} label="Votes" min={filters.votes[0]} max={filters.votes[1]} limitMin={0} limitMax={999999} onMin={(v) => updateMin('votes', v, 0, 999999)} onMax={(v) => updateMax('votes', v, 0, 999999)} />
+                    <FilterInputGroup icon={<Layers size={14}/>} label="Episodes" min={filters.eps[0]} max={filters.eps[1]} limitMin={0} limitMax={9999} onMin={(v) => updateMin('eps', v, 0, 9999)} onMax={(v) => updateMax('eps', v, 0, 9999)} />
                   </div>
 
+                  {/* Row 2: Advanced Options & Season */}
+                  <div className="flex flex-col xl:flex-row gap-8 pt-4 border-t border-neutral-800/50">
+                    
+                    <div className="flex flex-col md:flex-row gap-8 items-start">
+                      <div className="flex flex-col gap-3">
+                        <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider pl-1">Format</span>
+                        <div className="flex gap-2">
+                          {["TV", "Movie", "OVA", "Web"].map(type => (
+                            <button 
+                              key={type} 
+                              onClick={() => toggleType(type)} 
+                              className={`px-4 py-1.5 rounded-lg text-[11px] font-bold transition-all border ${selectedTypes.has(type) ? "bg-pink-600 border-pink-500 text-white shadow-md shadow-pink-900/50" : "bg-neutral-900 border-neutral-800 text-neutral-500 hover:text-neutral-300 hover:border-neutral-700"}`}
+                            >
+                              {type}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <AnimatePresence mode="popLayout">
+                        {showSeasonSelector && (
+                          <motion.div 
+                            initial={{ opacity: 0, x: -10, filter: 'blur(5px)' }}
+                            animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+                            exit={{ opacity: 0, scale: 0.95, filter: 'blur(5px)' }}
+                            className="flex flex-col gap-3"
+                          >
+                            <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider pl-1 flex items-center gap-2">
+                               {filters.year[0]} Season
+                            </span>
+                            <div className="grid grid-cols-4 w-full md:w-auto bg-neutral-900/50 p-1 rounded-lg border border-neutral-800 gap-1">
+                              {seasonConfig.map(s => {
+                                const isActive = selectedSeason === s.v;
+                                return (
+                                  <button 
+                                    key={s.v} 
+                                    onClick={() => setSelectedSeason(isActive ? null : s.v)} 
+                                    className={`
+                                      relative flex items-center justify-center gap-2 px-4 py-1.5 rounded-md text-[11px] font-bold transition-all border
+                                      ${isActive 
+                                        ? s.activeClass 
+                                        : "border-transparent text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800"}
+                                    `}
+                                  >
+                                    <span className={isActive ? "opacity-100" : "opacity-70"}>{s.i}</span>
+                                    <span className="hidden lg:inline">{s.n}</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+
+                    {/* Toggles & Reset */}
+                    <div className="xl:ml-auto flex items-end gap-3">
+                       {/* Status Filter Tabs */}
+                       <div className="flex bg-neutral-900 rounded-lg p-1 border border-neutral-800">
+                          {statusOptions.map(opt => (
+                            <button
+                              key={opt.id}
+                              onClick={() => setStatusFilter(opt.id as StatusFilterType)}
+                              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all border ${
+                                statusFilter === opt.id ? opt.activeClass : "border-transparent text-neutral-500 hover:text-neutral-300"
+                              }`}
+                            >
+                              {opt.icon} <span className="hidden md:inline">{opt.label}</span>
+                            </button>
+                          ))}
+                       </div>
+
+                      <button onClick={resetAll} className="px-6 py-2 rounded-lg text-[11px] font-bold border border-transparent text-neutral-500 hover:text-red-400 hover:bg-red-900/10 transition-all flex items-center gap-2">
+                        <X size={14} /> Clear Filters
+                      </button>
+                    </div>
+
+                  </div>
                 </div>
               </div>
             </div>

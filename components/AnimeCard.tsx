@@ -10,9 +10,10 @@ interface AnimeCardProps {
   status: ItemStatus; // 'collected' | 'wishlist' | 'ignored' | null
   onUpdateStatus: (id: number, status: ItemStatus) => void;
   isAdmin: boolean;
+  priority?: boolean;
 }
 
-export function AnimeCard({ item, status, onUpdateStatus, isAdmin }: AnimeCardProps) {
+export function AnimeCard({ item, status, onUpdateStatus, isAdmin, priority = false }: AnimeCardProps) {
   // Bangumi Strict Scoring Colors
   const getScoreColor = (s: number) => {
     if (s >= 9.0) return "text-[#FFD700]"; // Gold
@@ -66,6 +67,7 @@ export function AnimeCard({ item, status, onUpdateStatus, isAdmin }: AnimeCardPr
             src={item.img.replace("http://", "https://")}
             alt={item.name}
             fill
+            priority={priority}
             className={`object-cover transition-transform duration-500 group-hover:scale-105 ${grayscaleClass}`}
             sizes="(max-width: 768px) 50vw, 20vw"
             unoptimized

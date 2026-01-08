@@ -201,13 +201,14 @@ function BangumiExplorer() {
         ) : (
           <>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
-              {visibleData.map((item) => (
+              {visibleData.map((item, index) => (
                 <div key={item.id} onClick={() => setSelectedItem(item)} className="cursor-pointer">
                   <AnimeCard
                     item={item}
                     status={getStatus(item.id)}
                     onUpdateStatus={updateStatus}
                     isAdmin={isAdmin}
+                    priority={index < 8}
                   />
                 </div>
               ))}
