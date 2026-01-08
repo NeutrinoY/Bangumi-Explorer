@@ -4,25 +4,23 @@
   <p><strong>A minimalist, modern anime discovery and collection manager.</strong></p>
 
   <p>
-    <a href="https://bangumi-explorer.neutrinoy.xyz">
-      <img src="https://img.shields.io/badge/Live%20Demo-bangumi--explorer.neutrinoy.xyz-blue?style=for-the-badge&logo=vercel" alt="Live Demo">
-    </a>
-    <a href="https://github.com/NeutrinoY/Bangumi-Explorer/actions">
-      <img src="https://img.shields.io/github/actions/workflow/status/NeutrinoY/Bangumi-Explorer/update-db.yml?style=for-the-badge&label=Data%20Sync" alt="Data Sync Status">
-    </a>
+    <a href="https://bangumi-explorer.neutrinoy.xyz"><img src="https://img.shields.io/badge/Website-bangumi--explorer.neutrinoy.xyz-blue?style=for-the-badge&logo=vercel" alt="Website"></a>
+    <a href="https://github.com/NeutrinoY/Bangumi-Explorer/actions"><img src="https://img.shields.io/github/actions/workflow/status/NeutrinoY/Bangumi-Explorer/update-db.yml?style=for-the-badge&label=Data%20Sync" alt="Data Sync"></a>
   </p>
 
   <p>
-    <b>English</b> | <a href="./README_CN.md">中文说明</a>
+    <b>English</b> | <a href="./README_CN.md">中文</a>
   </p>
 </div>
 
 <br/>
 
 <div align="center">
-  <img src="docs/images/preview-1.webp" width="32%" alt="Home Page - Masonry Layout">
-  <img src="docs/images/preview-2.webp" width="32%" alt="Advanced Filtering System">
-  <img src="docs/images/preview-3.webp" width="32%" alt="Immersive Detail View">
+  <img src="docs/images/preview-1.webp" width="100%" alt="Home Page - Masonry Layout" style="margin-bottom: 10px;">
+  <br/>
+  <img src="docs/images/preview-2.webp" width="100%" alt="Advanced Filtering System" style="margin-bottom: 10px;">
+  <br/>
+  <img src="docs/images/preview-3.webp" width="100%" alt="Immersive Detail View">
 </div>
 
 ---
@@ -33,9 +31,7 @@ As a dedicated anime collector, my local **Emby** library houses over **1,000 ti
 
 My early workflow was primitive: Python scripts processing scraped Bangumi data, dumped into Excel after cleaning. While Excel's filtering is powerful, staring at thousands of rows of cold text offered no joy in browsing the art form. Furthermore, manually cross-referencing local inventory with online databases was a tedious, soul-crushing process.
 
-**Bangumi Explorer** was born from this need. I wanted to make the process elegant, intuitive, and efficient. It is not just a database; it is a private **"Curator's Gallery"** for anime.
-
-Visit the live site: [bangumi-explorer.neutrinoy.xyz](https://bangumi-explorer.neutrinoy.xyz)
+**[Bangumi Explorer](https://bangumi-explorer.neutrinoy.xyz)** was born from this need. I wanted to make the process elegant, intuitive, and efficient. It is not just a database; it is a private **"Curator's Gallery"** for anime.
 
 ---
 
@@ -93,10 +89,10 @@ Data remains "fresh" without any manual intervention.
 
 Built on the latest generation of the Web ecosystem, pursuing extreme performance and developer experience.
 
-*   **Frontend**: [Next.js 16](https://nextjs.org/) (App Router), [React](https://react.dev/), [TypeScript](https://www.typescriptlang.org/)
-*   **Styling**: [Tailwind CSS](https://tailwindcss.com/), [Framer Motion](https://www.framer.com/motion/)
-*   **Backend / Auth**: [Supabase](https://supabase.com/)
-*   **Icons**: [Lucide React](https://lucide.dev/)
+*   **Frontend**: Next.js
+*   **Styling**: Tailwind CSS, Framer Motion
+*   **Backend / Auth**: Supabase
+*   **Icons**: Lucide React
 
 ---
 

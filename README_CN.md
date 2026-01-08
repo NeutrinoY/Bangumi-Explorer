@@ -4,25 +4,23 @@
   <p><strong>极简、现代化的番剧数据探索与收藏管理工具。</strong></p>
 
   <p>
-    <a href="https://bangumi-explorer.neutrinoy.xyz">
-      <img src="https://img.shields.io/badge/Live%20Demo-bangumi--explorer.neutrinoy.xyz-blue?style=for-the-badge&logo=vercel" alt="在线演示">
-    </a>
-    <a href="https://github.com/NeutrinoY/Bangumi-Explorer/actions">
-      <img src="https://img.shields.io/github/actions/workflow/status/NeutrinoY/Bangumi-Explorer/update-db.yml?style=for-the-badge&label=%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5" alt="数据同步状态">
-    </a>
+    <a href="https://bangumi-explorer.neutrinoy.xyz"><img src="https://img.shields.io/badge/Website-bangumi--explorer.neutrinoy.xyz-blue?style=for-the-badge&logo=vercel" alt="Website"></a>
+    <a href="https://github.com/NeutrinoY/Bangumi-Explorer/actions"><img src="https://img.shields.io/github/actions/workflow/status/NeutrinoY/Bangumi-Explorer/update-db.yml?style=for-the-badge&label=Data%20Sync" alt="Data Sync"></a>
+  </p>
+  <p>
+    <a href="./README.md">English</a> | <b>中文</b>
   </p>
 
-  <p>
-    <a href="./README.md">English</a> | <b>中文说明</b>
-  </p>
 </div>
 
 <br/>
 
 <div align="center">
-  <img src="docs/images/preview-1.webp" width="32%" alt="首页瀑布流">
-  <img src="docs/images/preview-2.webp" width="32%" alt="高级筛选系统">
-  <img src="docs/images/preview-3.webp" width="32%" alt="沉浸式详情页">
+  <img src="docs/images/preview-1.webp" width="100%" alt="首页瀑布流" style="margin-bottom: 10px;">
+  <br/>
+  <img src="docs/images/preview-2.webp" width="100%" alt="高级筛选系统" style="margin-bottom: 10px;">
+  <br/>
+  <img src="docs/images/preview-3.webp" width="100%" alt="沉浸式详情页">
 </div>
 
 ---
@@ -33,9 +31,7 @@
 
 早期的解决方案非常原始：编写 Python 脚本处理抓取好的 Bangumi 数据，清洗后导入 Excel。虽然 Excel 筛选功能强大，但面对成千上万行冰冷的文字，完全体会不到浏览艺术作品的乐趣。而且，手动比对本地库存与线上数据是一个极其枯燥的过程。
 
-**Bangumi Explorer** 因此诞生。我想把这个过程变得优雅、直观且高效。它不只是一个数据库，更是一个私人的“番剧策展馆”。
-
-访问在线演示: [bangumi-explorer.neutrinoy.xyz](https://bangumi-explorer.neutrinoy.xyz)
+**[Bangumi Explorer](https://bangumi-explorer.neutrinoy.xyz)** 因此诞生。我想把这个过程变得优雅、直观且高效。它不只是一个数据库，更是一个私人的“番剧策展馆”。
 
 ---
 
@@ -94,10 +90,10 @@
 
 本项目基于最新一代 Web 技术栈构建，追求极致的性能与开发体验。
 
-*   **Frontend**: [Next.js 16](https://nextjs.org/) (App Router), [React](https://react.dev/), [TypeScript](https://www.typescriptlang.org/)
-*   **Styling**: [Tailwind CSS](https://tailwindcss.com/), [Framer Motion](https://www.framer.com/motion/)
-*   **Backend / Auth**: [Supabase](https://supabase.com/)
-*   **Icons**: [Lucide React](https://lucide.dev/)
+*   **Frontend**: Next.js
+*   **Styling**: Tailwind CSS, Framer Motion
+*   **Backend / Auth**: Supabase
+*   **Icons**: Lucide React
 
 ---
 
