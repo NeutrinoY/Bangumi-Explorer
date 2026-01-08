@@ -1,0 +1,47 @@
+name: Update Database
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Daily at 00:00 UTC
+  workflow_dispatch:
+
+jobs:
+  update-db:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Checkout Upstream Data
+        uses: actions/checkout@v4
+        with:
+          repository: Jinrxin/bangumi-data
+          path: upstream_data
+          sparse-checkout: dist/subject
+          sparse-checkout-cone-mode: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Merge Script
+        env:
+          # Point to the checked out upstream data
+          SUBJECT_DIR: ${{ github.workspace }}/upstream_data/dist/subject
+          # Output to public/db.json in the current repo
+          OUTPUT_FILE: ${{ github.workspace }}/public/db.json
+        run: |
+          echo "Running merge script..."
+          # scripts/merge.cjs relies on fs and path which are built-in, 
+          # but ensuring we are in the root of the repo (web-ui root)
+          node scripts/merge.cjs
+
+      - name: Commit Updated Database
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(data): update db.json from upstream [skip ci]"
+          file_pattern: 'public/db.json'
