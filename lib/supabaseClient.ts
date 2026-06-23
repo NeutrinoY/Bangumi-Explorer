@@ -1,6 +1,19 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+function requirePublicEnv(name: string, value: string | undefined): string {
+  if (!value) {
+    throw new Error(`Missing required public environment variable: ${name}`);
+  }
+  return value;
+}
+
+const supabaseUrl = requirePublicEnv(
+  "NEXT_PUBLIC_SUPABASE_URL",
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+);
+const supabaseKey = requirePublicEnv(
+  "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+);
 
 export const supabase = createClient(supabaseUrl, supabaseKey);

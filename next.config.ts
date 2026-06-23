@@ -6,13 +6,13 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'lain.bgm.tv',
+        protocol: "https",
+        hostname: "lain.bgm.tv",
       },
       {
-        protocol: 'http',
-        hostname: 'lain.bgm.tv',
-      }
+        protocol: "http",
+        hostname: "lain.bgm.tv",
+      },
     ],
   },
 };

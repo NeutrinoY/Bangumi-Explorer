@@ -1,8 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabaseClient";
 import type { User } from "@supabase/supabase-js";
+import { useEffect, useState } from "react";
+import { isAdminUser } from "@/features/collection/state";
+import { supabase } from "@/lib/supabaseClient";
+
+const ADMIN_UID = process.env.NEXT_PUBLIC_ADMIN_UID;
 
 export function useAdmin() {
   const [user, setUser] = useState<User | null>(null);
@@ -13,7 +16,7 @@ export function useAdmin() {
     // 1. Check active session on mount
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
-      setIsAdmin(!!session?.user);
+      setIsAdmin(isAdminUser(session?.user ?? null, ADMIN_UID));
       setIsAuthLoaded(true);
     });
 
@@ -22,7 +25,7 @@ export function useAdmin() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
-      setIsAdmin(!!session?.user);
+      setIsAdmin(isAdminUser(session?.user ?? null, ADMIN_UID));
     });
 
     return () => subscription.unsubscribe();

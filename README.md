@@ -85,6 +85,19 @@ Data remains "fresh" without any manual intervention.
 
 ---
 
+## 📝 Changelog
+
+### 2026-06 · Architecture Refresh
+
+After the first version took shape on **January 9, 2026**, the browsing experience and collection workflow had already become stable. This update does not redesign the interface or change the spirit of the project. Instead, it focuses on the internals: making the codebase clearer, more reliable, and easier to maintain over time.
+
+*   **Clearer domain boundaries**: Filtering, sorting, URL state, and collection state have been separated from the page layer, keeping the interface fluid while making the core logic easier to reason about.
+*   **A more modern engineering baseline**: The quality and formatting workflow is now leaner, with focused tests around the logic that matters most for browsing and curation.
+*   **A sturdier data flow**: The internal ETL path has been reshaped so Bangumi data transformation is easier to validate and less opaque during automated syncs.
+*   **Pragmatic backend hardening**: Supabase remains the lightweight backend for collection state, with a few important details tightened around admin detection and failed cloud sync recovery.
+
+---
+
 ## 🛠️ Tech Stack
 
 Built on the latest generation of the Web ecosystem, pursuing extreme performance and developer experience.
