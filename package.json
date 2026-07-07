@@ -1,6 +1,6 @@
 {
   "name": "bangumi-explorer",
-  "version": "0.2.0",
+  "version": "3.0.0",
   "private": true,
   "packageManager": "pnpm@11.3.0",
   "scripts": {

@@ -13,11 +13,9 @@
       "!out",
       "!build",
       "!coverage",
-      "!public/db.json",
       "!public/data",
       "!upstream_data",
-      "!.pnpm-store",
-      "!legacy-backup"
+      "!.pnpm-store"
     ]
   },
   "formatter": {

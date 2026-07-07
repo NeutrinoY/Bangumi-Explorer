@@ -1,49 +1,44 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
-/.pnpm-store
+# Dependencies
+/node_modules/
+/.pnpm-store/
 /.pnp
 .pnp.*
+
+# Yarn artifacts, if Yarn is used locally
 .yarn/*
 !.yarn/patches
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
 
-# testing
-/coverage
-
-# next.js
+# Build output
 /.next/
 /out/
+/build/
+/coverage/
 
-# production
-/build
+# Local environment
+.env*
+.vercel/
 
-# misc
-.DS_Store
-*.pem
-Thumbs.db
+# Generated TypeScript state
+*.tsbuildinfo
+next-env.d.ts
 
-# debug
+# Data sync scratch space
+/upstream_data/
+
+# Agent-local files
+/.agents/
+skills-lock.json
+
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-# Data Sync Temporary Files
-upstream_data/
-
-# agent
-.agents
+# OS and local secrets
+.DS_Store
+Thumbs.db
+*.pem

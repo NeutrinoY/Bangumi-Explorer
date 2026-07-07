@@ -4,8 +4,8 @@
  * The ETL emits two artifacts from upstream Bangumi data:
  * - `public/data/index.json`  — SubjectIndex[]: everything browsing, filtering,
  *   searching and sorting need. Loaded once, kept in memory.
- * - `public/data/details/{id}.json` — SubjectDetail: heavy fields fetched on
- *   demand when a subject's detail view opens.
+ * - `public/data/details-*.json` — SubjectDetail buckets: heavy fields fetched
+ *   on demand when a subject's detail view opens.
  *
  * These plain types are the single source of truth for that contract; the zod
  * schemas in `etl/schemas.ts` are typed against them so the pipeline cannot
