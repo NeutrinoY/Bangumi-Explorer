@@ -5,7 +5,7 @@ import type { ItemStatus } from "@/features/collection/domain";
 import type { SubjectIndex } from "@/shared/data/subject";
 import { type ExplorerAction, explorerReducer } from "./domain/actions";
 import { clampPage, filterSubjects, pageCount, pageSlice, sortSubjects } from "./domain/query";
-import { type ExplorerState, PAGE_SIZE } from "./domain/state";
+import { DEFAULT_STATE, type ExplorerState, PAGE_SIZE } from "./domain/state";
 import { parseExplorerState, serializeExplorerState } from "./domain/url";
 
 export interface ExplorerView {
@@ -31,16 +31,15 @@ const URL_WRITE_DELAY_MS = 300;
 
 /**
  * The explorer's single stateful surface: one reducer over ExplorerState,
- * with the URL as a debounced persistence projection. State initializes
- * from the URL exactly once (lazy init), so shared links restore the view.
+ * with the URL as a debounced persistence projection. The first render uses
+ * the default state so SSR and hydration match; URL state is applied after
+ * mount, preserving shared links without hydration drift.
  */
 export function useExplorer(
   subjects: readonly SubjectIndex[],
   getStatus: (id: number) => ItemStatus | null,
 ): ExplorerView {
-  const [state, dispatch] = useReducer(explorerReducer, undefined, () =>
-    parseExplorerState(typeof window === "undefined" ? "" : window.location.search),
-  );
+  const [state, dispatch] = useReducer(explorerReducer, DEFAULT_STATE);
 
   const results = useMemo(
     () => sortSubjects(filterSubjects(subjects, state, getStatus), state.sort),
@@ -55,6 +54,11 @@ export function useExplorer(
   // --- URL projection ---
   const urlTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFirstRender = useRef(true);
+
+  useEffect(() => {
+    if (!window.location.search) return;
+    dispatch({ kind: "hydrate", state: parseExplorerState(window.location.search) });
+  }, []);
 
   useEffect(() => {
     // The initial state came *from* the URL; writing it back immediately

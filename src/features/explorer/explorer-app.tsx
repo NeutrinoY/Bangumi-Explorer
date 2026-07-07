@@ -1,7 +1,7 @@
 "use client";
 
 import { Lock, Search, Unlock } from "lucide-react";
-import { AnimatePresence } from "motion/react";
+import { AnimatePresence, MotionConfig } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { Toaster } from "sonner";
 import { LoginModal } from "@/features/auth/login-modal";
@@ -58,6 +58,8 @@ export function ExplorerApp({ initialSubjects }: ExplorerAppProps) {
   const [selected, setSelected] = useState<SubjectIndex | null>(null);
   const [showLogin, setShowLogin] = useState(false);
 
+  const openDetail = (subject: SubjectIndex) => setSelected(subject);
+
   // Smooth-scroll to the top when flipping pages.
   // biome-ignore lint/correctness/useExhaustiveDependencies: scroll reacts to page changes only
   useEffect(() => {
@@ -66,71 +68,82 @@ export function ExplorerApp({ initialSubjects }: ExplorerAppProps) {
 
   const isFiltering = useMemo(() => results.length !== subjects.length, [results, subjects]);
 
+  // Re-keying the grid on discrete reshuffles (page flip, sort change) plays
+  // a short fade; continuous changes (typing a search) reconcile in place.
+  const gridKey = `${page}-${state.sort}`;
+
   return (
-    <main className="min-h-dvh bg-neutral-950 pb-20 font-sans text-neutral-300 selection:bg-pink-500 selection:text-white">
-      <FilterPanel state={state} dispatch={dispatch} resultCount={results.length} />
+    <MotionConfig reducedMotion="user">
+      <main className="min-h-dvh bg-neutral-950 pb-20 font-sans text-neutral-300 selection:bg-pink-500 selection:text-white">
+        <FilterPanel state={state} dispatch={dispatch} resultCount={results.length} />
 
-      <div className="mx-auto max-w-[1920px] p-4 sm:p-6">
-        {visible.length === 0 ? (
-          <EmptyState
-            pending={!indexReady && !indexFailed && isFiltering}
-            failed={indexFailed}
-            onReset={() => dispatch({ kind: "reset" })}
-          />
-        ) : (
-          <>
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
-              {visible.map((subject, index) => (
-                <AnimeCard
-                  key={subject.id}
-                  subject={subject}
-                  status={getStatus(subject.id)}
-                  isAdmin={isAdmin}
-                  onOpen={() => setSelected(subject)}
-                  onUpdateStatus={updateStatus}
-                  priority={index < 8}
-                />
-              ))}
-            </div>
-
-            <Pagination
-              page={page}
-              totalPages={totalPages}
-              onPageChange={(next) => dispatch({ kind: "page-set", page: next })}
+        <div className="mx-auto max-w-[1920px] p-4 sm:p-6">
+          {visible.length === 0 ? (
+            <EmptyState
+              pending={!indexReady && !indexFailed && isFiltering}
+              failed={indexFailed}
+              onReset={() => dispatch({ kind: "reset" })}
             />
-          </>
-        )}
-      </div>
+          ) : (
+            <>
+              <div
+                key={gridKey}
+                className="animate-detail-in grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6"
+              >
+                {visible.map((subject, index) => (
+                  <AnimeCard
+                    key={subject.id}
+                    subject={subject}
+                    status={getStatus(subject.id)}
+                    isAdmin={isAdmin}
+                    onOpen={() => openDetail(subject)}
+                    onUpdateStatus={updateStatus}
+                    priority={index < 8}
+                  />
+                ))}
+              </div>
 
-      <AnimatePresence>
-        {selected && (
-          <DetailModal
-            subject={selected}
-            status={getStatus(selected.id)}
-            isAdmin={isAdmin}
-            onClose={() => setSelected(null)}
-            onUpdateStatus={updateStatus}
-          />
-        )}
-      </AnimatePresence>
+              <Pagination
+                page={page}
+                totalPages={totalPages}
+                onPageChange={(next) => dispatch({ kind: "page-set", page: next })}
+              />
+            </>
+          )}
+        </div>
 
-      {/* Admin toggle: intentionally subtle in the corner */}
-      <div className="fixed right-[max(1rem,env(safe-area-inset-right))] bottom-[max(1rem,env(safe-area-inset-bottom))] z-50 opacity-30 transition-opacity hover:opacity-100 focus-within:opacity-100">
-        <button
-          type="button"
-          onClick={() => (isAdmin ? logout() : setShowLogin(true))}
-          title={isAdmin ? "Logout" : "Admin Login"}
-          aria-label={isAdmin ? "Logout" : "Admin Login"}
-          className="flex min-h-11 min-w-11 items-center justify-center rounded-full border border-neutral-700 bg-black/50 text-neutral-500 shadow-lg transition-all hover:bg-neutral-800 hover:text-white"
-        >
-          {isAdmin ? <Unlock size={14} /> : <Lock size={14} />}
-        </button>
-      </div>
+        <AnimatePresence>
+          {selected && (
+            <DetailModal
+              subject={selected}
+              status={getStatus(selected.id)}
+              isAdmin={isAdmin}
+              onClose={() => setSelected(null)}
+              onUpdateStatus={updateStatus}
+            />
+          )}
+        </AnimatePresence>
 
-      {showLogin && <LoginModal onClose={() => setShowLogin(false)} onLogin={login} />}
+        {/* Admin toggle: intentionally subtle in the corner */}
+        <div className="fixed right-[max(1rem,env(safe-area-inset-right))] bottom-[max(1rem,env(safe-area-inset-bottom))] z-50 opacity-30 transition-opacity hover:opacity-100 focus-within:opacity-100">
+          <button
+            type="button"
+            onClick={() => (isAdmin ? logout() : setShowLogin(true))}
+            title={isAdmin ? "Logout" : "Admin Login"}
+            aria-label={isAdmin ? "Logout" : "Admin Login"}
+            className="flex min-h-11 min-w-11 items-center justify-center rounded-full border border-neutral-700 bg-black/50 text-neutral-500 shadow-lg transition-colors hover:bg-neutral-800 hover:text-white"
+          >
+            {isAdmin ? <Unlock size={14} /> : <Lock size={14} />}
+          </button>
+        </div>
 
-      <Toaster theme="dark" position="bottom-center" />
-    </main>
+        <AnimatePresence>
+          {showLogin && <LoginModal onClose={() => setShowLogin(false)} onLogin={login} />}
+        </AnimatePresence>
+
+        <Toaster theme="dark" position="bottom-center" />
+      </main>
+    </MotionConfig>
   );
 }
 

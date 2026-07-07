@@ -3,6 +3,11 @@
 :root {
   --background: #0a0a0a;
   --foreground: #ededed;
+  color-scheme: dark;
+}
+
+html {
+  scrollbar-gutter: stable;
 }
 
 @theme inline {
@@ -36,6 +41,13 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
+input:-webkit-autofill,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #ededed;
+  caret-color: oklch(65.6% 0.241 354.308);
+  box-shadow: 0 0 0 1000px #0a0a0a inset;
+}
+
 /* --- Professional Scrollbar (Modern & Minimal) --- */
 ::-webkit-scrollbar {
   width: 8px;
@@ -62,26 +74,17 @@ input[type="number"] {
   scrollbar-color: #2a2a2a #0a0a0a;
 }
 
-/* --- View Transitions: card poster morphs into the detail modal poster --- */
-/* The default root cross-fade would dim the whole page; keep it instant and
-   let only the tagged poster pair animate. */
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation: none;
+/* --- Async detail content: fade in when the data lands --- */
+@keyframes detail-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
-
-::view-transition-group(poster) {
-  animation-duration: 320ms;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-/* Poster aspect ratios differ slightly between card (3/4) and modal (2/3);
-   letting both frames fill the morphing group avoids a visible letterbox. */
-::view-transition-old(poster),
-::view-transition-new(poster) {
-  height: 100%;
-  width: 100%;
-  object-fit: cover;
+.animate-detail-in {
+  animation: detail-in 250ms ease-out;
 }
 
 /* --- Reduced motion: strip animations app-wide --- */
@@ -92,10 +95,5 @@ input[type="number"] {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
-  }
-  ::view-transition-group(*),
-  ::view-transition-old(*),
-  ::view-transition-new(*) {
-    animation: none !important;
   }
 }

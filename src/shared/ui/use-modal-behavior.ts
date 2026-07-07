@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 
 /**
  * Shared modal behavior:
@@ -12,20 +12,17 @@ import { useEffect, useRef } from "react";
  * Rendering is left to the caller; this hook only wires the behavior.
  */
 export function useModalBehavior(onClose: () => void): void {
+  const modalId = useId();
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
 
-  // Scroll lock. overflow:hidden removes the scrollbar, which would shift
-  // the page; pad the body by the scrollbar's width while locked.
+  // Scroll lock. The global scrollbar-gutter keeps the viewport stable, so
+  // fixed controls do not jump when the modal opens.
   useEffect(() => {
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
     const previousOverflow = document.body.style.overflow;
-    const previousPadding = document.body.style.paddingRight;
     document.body.style.overflow = "hidden";
-    if (scrollbarWidth > 0) document.body.style.paddingRight = `${scrollbarWidth}px`;
     return () => {
       document.body.style.overflow = previousOverflow;
-      document.body.style.paddingRight = previousPadding;
     };
   }, []);
 
@@ -41,8 +38,19 @@ export function useModalBehavior(onClose: () => void): void {
   // close the modal. If the modal closes by other means (X, Escape, backdrop),
   // consume our extra entry so history stays balanced.
   useEffect(() => {
+    const modalStateKey = "__bangumiExplorerModalId";
     let closedByPop = false;
-    window.history.pushState({ modal: true }, "");
+    let active = true;
+    let pushed = false;
+
+    // React Strict Mode intentionally runs effect setup/cleanup twice in dev.
+    // Deferring the history write lets that probe cleanup cancel cleanly instead
+    // of calling history.back(), which can immediately close the real modal.
+    const pushTimer = window.setTimeout(() => {
+      if (!active) return;
+      window.history.pushState({ ...window.history.state, [modalStateKey]: modalId }, "");
+      pushed = true;
+    }, 0);
 
     const onPopState = () => {
       closedByPop = true;
@@ -51,8 +59,12 @@ export function useModalBehavior(onClose: () => void): void {
     window.addEventListener("popstate", onPopState);
 
     return () => {
+      active = false;
+      window.clearTimeout(pushTimer);
       window.removeEventListener("popstate", onPopState);
-      if (!closedByPop) window.history.back();
+      if (!closedByPop && pushed && window.history.state?.[modalStateKey] === modalId) {
+        window.history.back();
+      }
     };
-  }, []);
+  }, [modalId]);
 }

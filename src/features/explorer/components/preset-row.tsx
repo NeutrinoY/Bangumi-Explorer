@@ -78,7 +78,7 @@ export function PresetRow({
               onClick={() => onToggle(preset)}
               aria-pressed={active}
               className={cn(
-                "flex min-h-9 items-center justify-center gap-2 rounded-lg border px-3 py-1.5 text-[11px] font-bold transition-all",
+                "flex min-h-9 items-center justify-center gap-2 rounded-lg border px-3 py-1.5 text-[11px] font-bold transition-colors",
                 active ? style.active : cn("border-neutral-800 bg-neutral-900/50", style.idle),
               )}
             >
@@ -101,7 +101,7 @@ export function PresetRow({
           disabled={!epsEnabled}
           aria-pressed={shortSeries}
           className={cn(
-            "flex min-h-9 items-center justify-center gap-2 rounded-lg border px-4 py-1.5 text-[11px] font-bold transition-all",
+            "flex min-h-9 items-center justify-center gap-2 rounded-lg border px-4 py-1.5 text-[11px] font-bold transition-colors",
             shortSeries
               ? "border-indigo-500/50 bg-indigo-500/20 text-indigo-300"
               : "border-neutral-800 bg-neutral-900/50 text-neutral-500 hover:border-neutral-700",
@@ -116,7 +116,7 @@ export function PresetRow({
           disabled={!epsEnabled}
           aria-pressed={seriesOnly}
           className={cn(
-            "flex min-h-9 items-center justify-center gap-2 rounded-lg border px-4 py-1.5 text-[11px] font-bold transition-all",
+            "flex min-h-9 items-center justify-center gap-2 rounded-lg border px-4 py-1.5 text-[11px] font-bold transition-colors",
             seriesOnly
               ? "border-teal-500/50 bg-teal-500/20 text-teal-300"
               : "border-neutral-800 bg-neutral-900/50 text-neutral-500 hover:border-neutral-700",

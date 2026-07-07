@@ -1,10 +1,10 @@
 "use client";
 
 import { Ban, Bookmark, Check, X } from "lucide-react";
-import Image from "next/image";
 import type { ItemStatus } from "@/features/collection/domain";
 import type { SubjectIndex } from "@/shared/data/subject";
 import { cn } from "@/shared/ui/cn";
+import { FadeInImage } from "@/shared/ui/fade-in-image";
 import { rankBadgeClass, STATUS_INDICATOR_CLASS, scoreColorClass } from "@/shared/ui/tokens";
 
 interface AnimeCardProps {
@@ -48,7 +48,7 @@ export function AnimeCard({
         }
       }}
       className={cn(
-        "group relative flex h-full cursor-pointer flex-col overflow-hidden rounded-lg border transition-all duration-200",
+        "group relative flex h-full cursor-pointer flex-col overflow-hidden rounded-lg border transition-[border-color,background-color,opacity] duration-200",
         "border-neutral-800 bg-neutral-900",
         status === "collected" && "border-green-500/50 bg-green-950/20",
         status === "wishlist" && "border-blue-500/50 bg-blue-950/20",
@@ -59,7 +59,7 @@ export function AnimeCard({
     >
       <div className="relative aspect-[3/4] w-full shrink-0 overflow-hidden bg-neutral-950">
         {subject.img ? (
-          <Image
+          <FadeInImage
             src={subject.img.replace("http://", "https://")}
             alt={subject.name}
             fill
@@ -69,7 +69,6 @@ export function AnimeCard({
               ignored && "grayscale",
             )}
             sizes="(max-width: 768px) 50vw, 20vw"
-            unoptimized
           />
         ) : (
           <div className="flex h-full items-center justify-center text-xs text-neutral-800 uppercase">
@@ -217,7 +216,7 @@ function AdminActionBar({
             onUpdate(status === action.status ? null : action.status);
           }}
           className={cn(
-            "flex min-h-11 flex-1 items-center justify-center rounded-md border backdrop-blur-md transition-all",
+            "flex min-h-11 flex-1 items-center justify-center rounded-md border backdrop-blur-md transition-colors",
             status === action.status
               ? action.active
               : cn(

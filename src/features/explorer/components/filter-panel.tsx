@@ -34,6 +34,7 @@ import { SUBJECT_TYPES } from "@/shared/data/subject";
 import { cn } from "@/shared/ui/cn";
 import { NumberField } from "@/shared/ui/number-field";
 import { useClickOutside } from "@/shared/ui/use-click-outside";
+import { MOBILE_QUERY, useMediaQuery } from "@/shared/ui/use-media-query";
 import { PresetRow } from "./preset-row";
 import { SortSelect } from "./sort-select";
 
@@ -50,9 +51,11 @@ interface FilterPanelProps {
 export function FilterPanel({ state, dispatch, resultCount }: FilterPanelProps) {
   const [isOpen, setIsOpen] = useState(false);
   const panelRef = useClickOutside<HTMLDivElement>(isOpen, () => setIsOpen(false));
+  // Mobile opens as a bottom sheet; desktop drops down from the sticky bar.
+  const isMobile = useMediaQuery(MOBILE_QUERY);
 
   return (
-    <div ref={panelRef} className="sticky top-0 z-50 transition-all">
+    <div ref={panelRef} className="sticky top-0 z-50">
       <div className="absolute inset-0 z-0 border-b border-neutral-800 bg-neutral-950/80 shadow-sm backdrop-blur-xl" />
 
       <div className="relative z-10 mx-auto max-w-[1920px] px-4 py-4 sm:px-6">
@@ -66,7 +69,7 @@ export function FilterPanel({ state, dispatch, resultCount }: FilterPanelProps) 
               aria-expanded={isOpen}
               aria-label="Toggle filters"
               className={cn(
-                "flex min-h-11 min-w-11 items-center justify-center rounded-xl border transition-all md:hidden",
+                "flex min-h-11 min-w-11 items-center justify-center rounded-xl border transition-colors md:hidden",
                 isOpen
                   ? "border-pink-500 bg-pink-600 text-white"
                   : "border-neutral-800 bg-neutral-900 text-neutral-400",
@@ -94,7 +97,7 @@ export function FilterPanel({ state, dispatch, resultCount }: FilterPanelProps) 
               onClick={() => setIsOpen(!isOpen)}
               aria-expanded={isOpen}
               className={cn(
-                "flex min-h-10 items-center gap-2 rounded-full border px-5 py-2 text-xs font-bold tracking-wide shadow-sm transition-all",
+                "flex min-h-10 items-center gap-2 rounded-full border px-5 py-2 text-xs font-bold tracking-wide shadow-sm transition-colors",
                 isOpen
                   ? "border-white bg-neutral-100 text-black"
                   : "border-neutral-800 bg-neutral-900 text-neutral-400 hover:border-neutral-600 hover:text-neutral-200",
@@ -120,15 +123,19 @@ export function FilterPanel({ state, dispatch, resultCount }: FilterPanelProps) 
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 md:absolute md:inset-auto md:top-full md:right-0 md:left-0 md:z-0 md:border-b md:border-neutral-800/80 md:shadow-2xl"
+            initial={isMobile ? { y: "100%" } : { opacity: 0, y: -10 }}
+            animate={isMobile ? { y: 0 } : { opacity: 1, y: 0 }}
+            exit={isMobile ? { y: "100%" } : { opacity: 0, y: -10 }}
+            transition={
+              isMobile
+                ? { type: "spring", damping: 30, stiffness: 300, mass: 0.7 }
+                : { duration: 0.2 }
+            }
+            className="fixed inset-0 z-50 overscroll-contain md:absolute md:inset-auto md:top-full md:right-0 md:left-0 md:z-0 md:border-b md:border-neutral-800/80 md:shadow-2xl"
           >
             <div className="absolute inset-0 bg-neutral-950 md:bg-neutral-950/95 md:backdrop-blur-xl" />
 
-            <div className="relative h-full overflow-y-auto md:h-auto md:overflow-visible">
+            <div className="relative h-full overflow-y-auto overscroll-contain md:h-auto md:overflow-visible">
               <div className="relative mx-auto min-h-full max-w-[1920px] px-4 py-6 sm:px-6 md:min-h-0">
                 {/* Mobile sheet header */}
                 <div className="mb-6 flex items-center justify-between border-b border-neutral-800 pb-4 pt-[env(safe-area-inset-top)] md:hidden">
@@ -200,7 +207,7 @@ function SearchBox({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="min-h-11 w-full rounded-full border border-neutral-800/80 bg-neutral-900/50 py-3 pr-4 pl-11 text-sm text-neutral-200 shadow-inner transition-all placeholder:text-neutral-600 focus:border-pink-500/50 focus:bg-neutral-900 focus:outline-none [&::-webkit-search-cancel-button]:appearance-none"
+        className="min-h-11 w-full rounded-full border border-neutral-800/80 bg-neutral-900/50 py-3 pr-4 pl-11 text-sm text-neutral-200 shadow-inner transition-colors placeholder:text-neutral-600 focus:border-pink-500/50 focus:bg-neutral-900 focus:outline-none [&::-webkit-search-cancel-button]:appearance-none"
       />
     </div>
   );
@@ -272,7 +279,7 @@ function RangeSection({
           <div
             key={field.key}
             className={cn(
-              "group relative flex flex-col gap-2 rounded-xl border p-3 transition-all duration-300",
+              "group relative flex flex-col gap-2 rounded-xl border p-3 transition-colors duration-300",
               highlighted
                 ? "border-pink-500/30 bg-pink-900/5"
                 : "border-neutral-800 bg-neutral-900/30 hover:border-neutral-700",
@@ -358,31 +365,31 @@ const STATUS_OPTIONS: {
     value: "todo",
     label: "Todo",
     icon: <ListFilter size={12} />,
-    activeClass: "bg-neutral-100 text-black border-white",
+    activeClass: "border-white/70 bg-neutral-100 text-black shadow-lg shadow-white/10",
   },
   {
     value: "collected",
     label: "Saved",
     icon: <Check size={12} />,
-    activeClass: "bg-green-500 text-white border-green-400",
+    activeClass: "border-green-400/60 bg-green-500/20 text-green-200 shadow-lg shadow-green-500/10",
   },
   {
     value: "wishlist",
     label: "Wishlist",
     icon: <Bookmark size={12} />,
-    activeClass: "bg-blue-500 text-white border-blue-400",
+    activeClass: "border-blue-400/60 bg-blue-500/20 text-blue-200 shadow-lg shadow-blue-500/10",
   },
   {
     value: "ignored",
     label: "Ignored",
     icon: <Ban size={12} />,
-    activeClass: "bg-red-500 text-white border-red-400",
+    activeClass: "border-red-400/60 bg-red-500/20 text-red-200 shadow-lg shadow-red-500/10",
   },
   {
     value: "all",
     label: "All",
     icon: <Layers size={12} />,
-    activeClass: "bg-neutral-800 text-white border-neutral-600",
+    activeClass: "border-neutral-500 bg-neutral-800 text-white shadow-lg shadow-white/5",
   },
 ];
 
@@ -411,7 +418,7 @@ function BottomSection({
                 onClick={() => dispatch({ kind: "type-toggle", type })}
                 aria-pressed={state.types.has(type)}
                 className={cn(
-                  "min-h-9 rounded-lg border px-4 py-1.5 text-[11px] font-bold transition-all",
+                  "min-h-9 rounded-lg border px-4 py-1.5 text-[11px] font-bold transition-colors",
                   state.types.has(type)
                     ? "border-pink-500 bg-pink-600 text-white shadow-md shadow-pink-900/50"
                     : "border-neutral-800 bg-neutral-900 text-neutral-500 hover:border-neutral-700 hover:text-neutral-300",
@@ -427,9 +434,10 @@ function BottomSection({
         <AnimatePresence mode="popLayout">
           {showSeason && (
             <motion.div
-              initial={{ opacity: 0, x: -10, filter: "blur(5px)" }}
-              animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-              exit={{ opacity: 0, scale: 0.95, filter: "blur(5px)" }}
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -8 }}
+              transition={{ duration: 0.16, ease: "easeOut" }}
               className="flex flex-col gap-3"
             >
               <span className="flex items-center gap-2 pl-1 text-[10px] font-bold tracking-wider text-neutral-500 uppercase">
@@ -447,7 +455,7 @@ function BottomSection({
                       }
                       aria-pressed={isActive}
                       className={cn(
-                        "relative flex min-h-9 items-center justify-center gap-2 rounded-md border px-4 py-1.5 text-[11px] font-bold transition-all",
+                        "relative flex min-h-9 items-center justify-center gap-2 rounded-md border px-4 py-1.5 text-[11px] font-bold transition-colors",
                         isActive
                           ? option.activeClass
                           : "border-transparent text-neutral-500 hover:bg-neutral-800 hover:text-neutral-300",
@@ -466,30 +474,33 @@ function BottomSection({
 
       <div className="flex items-end gap-3 xl:ml-auto">
         {/* Collection status tabs */}
-        <div className="flex rounded-lg border border-neutral-800 bg-neutral-900 p-1">
-          {STATUS_OPTIONS.map((option) => (
-            <button
-              type="button"
-              key={option.value}
-              onClick={() => dispatch({ kind: "status-set", status: option.value })}
-              aria-pressed={state.status === option.value}
-              title={option.label}
-              className={cn(
-                "flex min-h-9 items-center gap-2 rounded-md border px-3 py-1.5 text-[10px] font-bold uppercase transition-all",
-                state.status === option.value
-                  ? option.activeClass
-                  : "border-transparent text-neutral-500 hover:text-neutral-300",
-              )}
-            >
-              {option.icon} <span className="hidden md:inline">{option.label}</span>
-            </button>
-          ))}
+        <div className="grid grid-cols-5 rounded-xl border border-neutral-800 bg-neutral-900 p-1 shadow-inner shadow-black/20">
+          {STATUS_OPTIONS.map((option) => {
+            const isActive = state.status === option.value;
+            return (
+              <button
+                type="button"
+                key={option.value}
+                onClick={() => dispatch({ kind: "status-set", status: option.value })}
+                aria-pressed={isActive}
+                title={option.label}
+                className={cn(
+                  "flex min-h-9 min-w-0 items-center justify-center gap-2 rounded-lg border px-3 py-1.5 text-[10px] font-bold uppercase transition-colors md:min-w-[6.75rem]",
+                  isActive
+                    ? option.activeClass
+                    : "border-transparent text-neutral-500 hover:text-neutral-300",
+                )}
+              >
+                {option.icon} <span className="hidden md:inline">{option.label}</span>
+              </button>
+            );
+          })}
         </div>
 
         <button
           type="button"
           onClick={() => dispatch({ kind: "reset" })}
-          className="flex min-h-9 items-center gap-2 rounded-lg border border-transparent px-6 py-2 text-[11px] font-bold text-neutral-500 transition-all hover:bg-red-900/10 hover:text-red-400"
+          className="flex min-h-9 items-center gap-2 rounded-lg border border-transparent px-6 py-2 text-[11px] font-bold text-neutral-500 transition-colors hover:bg-red-900/10 hover:text-red-400"
         >
           <X size={14} /> Clear Filters
         </button>

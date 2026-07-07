@@ -38,7 +38,7 @@ export function SortSelect({
           aria-haspopup="listbox"
           aria-expanded={open}
           className={cn(
-            "flex min-h-9 w-full items-center justify-between rounded-lg border px-3 py-2 text-xs font-bold transition-all",
+            "flex min-h-9 w-full items-center justify-between rounded-lg border px-3 py-2 text-xs font-bold transition-colors",
             open
               ? "border-neutral-700 bg-neutral-800 text-white"
               : "border-neutral-800 bg-neutral-900/50 text-neutral-300 hover:border-neutral-700",

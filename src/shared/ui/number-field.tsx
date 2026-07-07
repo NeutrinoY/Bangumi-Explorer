@@ -60,7 +60,7 @@ export function NumberField({
       className={cn(
         "w-full min-h-9 rounded-lg border border-neutral-800 bg-neutral-950/50 px-2 py-1.5",
         "text-center font-mono text-xs text-white placeholder:text-neutral-700",
-        "transition-all focus:border-pink-500/40 focus:bg-neutral-950 focus:outline-none",
+        "transition-colors focus:border-pink-500/40 focus:bg-neutral-950 focus:outline-none",
         "[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
       )}
     />
