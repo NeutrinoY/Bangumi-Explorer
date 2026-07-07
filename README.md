@@ -95,6 +95,7 @@ A ground-up rebuild of the internals while keeping the product experience intact
 *   **Feature-first architecture**: `explorer` / `collection` / `auth` features each own their pure domain logic, side-effect hooks, and components. All defaults and constants have a single source of truth.
 *   **Type-safe data pipeline**: The ETL is TypeScript and shares its output types with the frontend; upstream data is validated with zod at build time.
 *   **Touch-first polish**: 44px touch targets, dvh viewport units, safe-area insets, numeric keyboards, and back-button-closes-modal on mobile.
+*   **Refined interaction model**: Detail views open with restrained opacity/scale motion, image loading fades in, filter sheets behave like mobile panels, and URL state hydrates after the static shell to avoid hydration drift.
 *   **Honest error feedback**: Failed cloud syncs now roll back *and* notify, instead of failing silently.
 
 ### 2026-06 · Architecture Refresh

@@ -173,7 +173,7 @@ function Brand({ resultCount }: { resultCount: number }) {
         BANGUMI <span className="text-pink-500">EXPLORER</span>
       </h1>
       <div className="flex items-center gap-2 font-mono text-[9px] font-bold tracking-widest text-neutral-500 uppercase">
-        <span>Database v2.0</span>
+        <span>Database v3.0</span>
         <div className="h-1 w-1 rounded-full bg-neutral-700" />
         <span className={resultCount === 0 ? "text-red-500" : "text-neutral-400"}>
           {resultCount.toLocaleString()} Found

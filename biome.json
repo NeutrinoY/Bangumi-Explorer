@@ -29,10 +29,7 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "preset": "recommended",
-      "correctness": {
-        "noUnknownTypeSelector": "off"
-      }
+      "preset": "recommended"
     }
   },
   "assist": {
@@ -53,5 +50,20 @@
     "parser": {
       "tailwindDirectives": true
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["src/app/globals.css"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noImportantStyles": "off"
+          },
+          "correctness": {
+            "noUnknownTypeSelector": "off"
+          }
+        }
+      }
+    }
+  ]
 }
