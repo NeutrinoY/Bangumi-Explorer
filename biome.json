@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.5.0/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.5.2/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -14,8 +14,10 @@
       "!build",
       "!coverage",
       "!public/db.json",
+      "!public/data",
       "!upstream_data",
-      "!.pnpm-store"
+      "!.pnpm-store",
+      "!legacy-backup"
     ]
   },
   "formatter": {
@@ -27,7 +29,10 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "preset": "recommended"
+      "preset": "recommended",
+      "correctness": {
+        "noUnknownTypeSelector": "off"
+      }
     }
   },
   "assist": {

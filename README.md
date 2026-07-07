@@ -78,14 +78,24 @@ The data foundation of this project is derived from the open-source project [Jin
 **Fully Automated via GitHub Actions:**
 The system is now completely self-sustaining:
 1.  **Daily Sync**: Automatically checks the upstream repository for updates every day (UTC 0:00).
-2.  **Internal ETL**: Triggers the `merge.cjs` script to Extract, Transform, and Load the raw data.
-3.  **Auto Deploy**: Commits the fresh `db.json` to the repo, triggering a Vercel rebuild automatically.
+2.  **Internal ETL**: Runs the TypeScript ETL (`etl/merge.ts`, schema-validated with zod) to Extract, Transform, and Load the raw data.
+3.  **Auto Deploy**: Commits the fresh artifacts (`index.json` + per-subject detail files) to the repo, triggering a Vercel rebuild automatically.
 
 Data remains "fresh" without any manual intervention.
 
 ---
 
 ## 📝 Changelog
+
+### 2026-07 · Deep Refactor
+
+A ground-up rebuild of the internals while keeping the product experience intact:
+
+*   **Instant first paint**: The homepage is now statically rendered at build time — no more loading spinner before anything appears. The 10MB database file was split into a ~2MB browse index plus on-demand per-subject detail files.
+*   **Feature-first architecture**: `explorer` / `collection` / `auth` features each own their pure domain logic, side-effect hooks, and components. All defaults and constants have a single source of truth.
+*   **Type-safe data pipeline**: The ETL is TypeScript and shares its output types with the frontend; upstream data is validated with zod at build time.
+*   **Touch-first polish**: 44px touch targets, dvh viewport units, safe-area insets, numeric keyboards, and back-button-closes-modal on mobile.
+*   **Honest error feedback**: Failed cloud syncs now roll back *and* notify, instead of failing silently.
 
 ### 2026-06 · Architecture Refresh
 

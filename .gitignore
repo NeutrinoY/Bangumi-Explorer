@@ -44,3 +44,6 @@ next-env.d.ts
 
 # Data Sync Temporary Files
 upstream_data/
+
+# agent
+.agents
